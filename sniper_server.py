@@ -81,7 +81,12 @@ def parse_channel_post(text: str, entities: list = None) -> list:
     plain_urls = re.findall(r'https?://[^\s\)]+', text)
     all_urls.extend(plain_urls)
     
-    for url in all_urls:
+    unique_urls = []
+    for u in all_urls:
+        if u not in unique_urls:
+            unique_urls.append(u)
+    
+    for url in unique_urls:
         cd_m = re.search(r'cdgraderBot/cdgrader\?startapp=(v_[a-zA-Z0-9_\-]+)', url)
         if cd_m:
             targets.append({
