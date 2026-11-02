@@ -190,44 +190,49 @@ async def activate_cdgrader_single(acc_name: str, meta: dict, cfg: dict, voucher
     proxy = meta.get("proxy", {}).get("telethon")
     user_agent = meta.get("user_agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
 
-    client = TelegramClient(
-        sess_path,
-        cfg["api_id"],
-        cfg["api_hash"],
-        proxy=proxy,
-        device_model=dev.get("device_model", "Desktop"),
-        system_version=dev.get("system_version", "Windows 11 x64"),
-        app_version=dev.get("app_version", "4.16.8 x64"),
-        system_lang_code=dev.get("system_lang_code", "ru-RU"),
-        lang_code=dev.get("lang_code", "ru"),
-        connection_retries=1
-    )
-
     init_data = None
-    try:
-        await asyncio.wait_for(client.connect(), timeout=12.0)
-        if not await client.is_user_authorized():
-            return {"account": acc_name, "ok": False, "reason": "unauthorized"}
+    proxies_to_try = [proxy, None] if proxy else [None]
+    last_err = None
 
-        bot = await client.get_entity("cdgraderBot")
-        res = await client(RequestAppWebViewRequest(
-            peer=bot,
-            app=InputBotAppShortName(bot_id=await client.get_input_entity(bot), short_name='cdgrader'),
-            platform='android',
-            start_param=voucher
-        ))
-        parsed = urllib.parse.parse_qs(urllib.parse.urlparse(res.url).fragment)
-        init_data = parsed.get('tgWebAppData', [''])[0]
-    except Exception as e:
-        return {"account": acc_name, "ok": False, "reason": f"mtproto_err: {e}"}
-    finally:
+    for cur_proxy in proxies_to_try:
+        client = TelegramClient(
+            sess_path,
+            cfg["api_id"],
+            cfg["api_hash"],
+            proxy=cur_proxy,
+            device_model=dev.get("device_model", "Desktop"),
+            system_version=dev.get("system_version", "Windows 11 x64"),
+            app_version=dev.get("app_version", "4.16.8 x64"),
+            system_lang_code=dev.get("system_lang_code", "ru-RU"),
+            lang_code=dev.get("lang_code", "ru"),
+            connection_retries=1
+        )
         try:
-            await client.disconnect()
-        except Exception:
-            pass
+            await asyncio.wait_for(client.connect(), timeout=8.0)
+            if not await client.is_user_authorized():
+                return {"account": acc_name, "ok": False, "reason": "unauthorized"}
+
+            bot = await client.get_entity("cdgraderBot")
+            res = await client(RequestAppWebViewRequest(
+                peer=bot,
+                app=InputBotAppShortName(bot_id=await client.get_input_entity(bot), short_name='cdgrader'),
+                platform='android',
+                start_param=voucher
+            ))
+            parsed = urllib.parse.parse_qs(urllib.parse.urlparse(res.url).fragment)
+            init_data = parsed.get('tgWebAppData', [''])[0]
+            break
+        except Exception as e:
+            last_err = e
+            continue
+        finally:
+            try:
+                await client.disconnect()
+            except Exception:
+                pass
 
     if not init_data:
-        return {"account": acc_name, "ok": False, "reason": "no_init_data"}
+        return {"account": acc_name, "ok": False, "reason": f"mtproto_err: {last_err or 'no_init_data'}"}
 
     try:
         headers = {

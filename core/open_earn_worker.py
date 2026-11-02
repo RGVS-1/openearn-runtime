@@ -85,35 +85,35 @@ async def process_account(
 
     try:
         try:
-            await asyncio.wait_for(client.connect(), timeout=18.0)
+            await asyncio.wait_for(client.connect(), timeout=12.0)
         except AuthKeyNotFound:
             result["error"] = "AUTH_KEY_NOT_FOUND (сессия деактивирована в Telegram)"
             return result
-        except asyncio.TimeoutError:
-            # Mark proxy dead and retry once with a rotated proxy
+        except Exception as e:
             if tel_proxy:
-                mark_proxy_dead(tel_proxy.get("addr", ""))
-                new_p = get_working_proxy_for_account(account_name, meta, force_rotate=True)
-                if new_p:
-                    tel_proxy = new_p.get("telethon")
-                    client = TelegramClient(
-                        session_file, api_id, api_hash, proxy=tel_proxy,
-                        device_model=dev.get("device_model", "Desktop"),
-                        system_version=dev.get("system_version", "Windows 11 x64"),
-                        app_version=dev.get("app_version", "4.16.8 x64"),
-                        system_lang_code=dev.get("system_lang_code", "ru-RU"),
-                        lang_code=dev.get("lang_code", "ru")
-                    )
-                    await asyncio.wait_for(client.connect(), timeout=18.0)
-                else:
-                    result["error"] = "PROXY_TIMEOUT (все запасные прокси недоступны)"
+                logger.info(f"[{account_name}] Proxy error ({e}), retrying via direct cloud connection...")
+                try:
+                    await client.disconnect()
+                except Exception:
+                    pass
+                tel_proxy = None
+                http_proxy = None
+                client = TelegramClient(
+                    session_file, api_id, api_hash, proxy=None,
+                    device_model=dev.get("device_model", "Desktop"),
+                    system_version=dev.get("system_version", "Windows 11 x64"),
+                    app_version=dev.get("app_version", "4.16.8 x64"),
+                    system_lang_code=dev.get("system_lang_code", "ru-RU"),
+                    lang_code=dev.get("lang_code", "ru")
+                )
+                try:
+                    await asyncio.wait_for(client.connect(), timeout=12.0)
+                except Exception as e2:
+                    result["error"] = f"CONNECTION_ERROR ({e2})"
                     return result
             else:
-                result["error"] = "PROXY_TIMEOUT"
+                result["error"] = f"CONNECTION_ERROR ({e})"
                 return result
-        except Exception as e:
-            result["error"] = f"CONNECTION_ERROR ({e})"
-            return result
 
         if not await client.is_user_authorized():
             result["error"] = "UNAUTHORIZED (сессия не авторизована)"

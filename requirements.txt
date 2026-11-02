@@ -1,6 +1,7 @@
 telethon>=1.36.0
 requests>=2.31.0
 PySocks>=1.7.1
+python-socks[asyncio]>=2.4.0
 rich>=13.7.0
 colorama>=0.4.6
 aiohttp>=3.9.0

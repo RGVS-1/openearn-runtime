@@ -89,90 +89,100 @@ async def run_single_account(
         "error": None
     }
 
-    # 1. Connect Telegram Client
-    client = TelegramClient(
-        session_file,
-        api_id,
-        api_hash,
-        proxy=tel_proxy,
-        device_model=dev.get("device_model", "Desktop"),
-        system_version=dev.get("system_version", "Windows 11 x64"),
-        app_version=dev.get("app_version", "5.4.1 x64"),
-        system_lang_code=dev.get("system_lang_code", "ru-RU"),
-        lang_code=dev.get("lang_code", "ru"),
-        connection_retries=2,
-        retry_delay=1
-    )
-
+    # 1. Connect Telegram Client with automatic proxy fallback
     init_data = None
-    try:
+    proxies_to_try = [tel_proxy, None] if tel_proxy else [None]
+    last_conn_err = None
+    connected_via_direct = False
+
+    for cur_proxy in proxies_to_try:
+        client = TelegramClient(
+            session_file,
+            api_id,
+            api_hash,
+            proxy=cur_proxy,
+            device_model=dev.get("device_model", "Desktop"),
+            system_version=dev.get("system_version", "Windows 11 x64"),
+            app_version=dev.get("app_version", "5.4.1 x64"),
+            system_lang_code=dev.get("system_lang_code", "ru-RU"),
+            lang_code=dev.get("lang_code", "ru"),
+            connection_retries=1,
+            retry_delay=1
+        )
+
         try:
-            await asyncio.wait_for(client.connect(), timeout=14.0)
+            await asyncio.wait_for(client.connect(), timeout=12.0)
+            if not await client.is_user_authorized():
+                result["status"] = "UNAUTHORIZED"
+                result["error"] = "Сессия не авторизована"
+                await client.disconnect()
+                return result
+
+            me = await client.get_me()
+            result["phone"] = me.phone or "Unknown"
+
+            bot_entity = await client.get_input_entity(bot_username)
+            bot = InputUser(bot_entity.user_id, bot_entity.access_hash)
+
+            # Send start command if needed
+            try:
+                await client(StartBotRequest(bot=bot, peer=bot, start_param=referral_param))
+            except Exception:
+                pass
+
+            # Join sponsor channels if enabled
+            if claim_channel_tasks:
+                channels = config.get("channels_to_join", ["pixelmania", "t0nenjoyer", "dailyenjoyer"])
+                for ch in channels:
+                    try:
+                        await client(JoinChannelRequest(ch))
+                        await asyncio.sleep(random.uniform(0.5, 1.2))
+                    except Exception:
+                        pass
+
+            # Get WebApp initData
+            platform_name = "android" if "android" in str(dev.get("system_version", "")).lower() else "tdesktop"
+            web_view = await client(RequestAppWebViewRequest(
+                peer=bot,
+                app=InputBotAppShortName(bot_id=bot, short_name=app_name),
+                platform=platform_name,
+                start_param=referral_param,
+                write_allowed=True
+            ))
+            
+            parsed = urllib.parse.urlparse(web_view.url)
+            params = urllib.parse.parse_qs(parsed.fragment)
+            init_data = params.get("tgWebAppData", [None])[0]
+            if cur_proxy is None and tel_proxy is not None:
+                connected_via_direct = True
+            break
         except AuthKeyNotFound:
             result["status"] = "DEAD_AUTH_KEY"
             result["error"] = "AuthKeyNotFound (сессия отключена Telegram)"
             return result
-        except asyncio.TimeoutError:
-            result["status"] = "PROXY_TIMEOUT"
-            result["error"] = "Таймаут подключения прокси"
-            return result
         except Exception as e:
-            result["status"] = "CONNECTION_ERROR"
-            result["error"] = str(e)
-            return result
-
-        if not await client.is_user_authorized():
-            result["status"] = "UNAUTHORIZED"
-            result["error"] = "Сессия не авторизована"
-            await client.disconnect()
-            return result
-
-        me = await client.get_me()
-        result["phone"] = me.phone or "Unknown"
-
-        bot_entity = await client.get_input_entity(bot_username)
-        bot = InputUser(bot_entity.user_id, bot_entity.access_hash)
-
-        # Send start command if needed
-        try:
-            await client(StartBotRequest(bot=bot, peer=bot, start_param=referral_param))
-        except Exception:
-            pass
-
-        # Join sponsor channels if enabled
-        if claim_channel_tasks:
-            channels = config.get("channels_to_join", ["pixelmania", "t0nenjoyer", "dailyenjoyer"])
-            for ch in channels:
-                try:
-                    await client(JoinChannelRequest(ch))
-                    await asyncio.sleep(random.uniform(0.5, 1.2))
-                except Exception:
-                    pass
-
-        # Get WebApp initData
-        platform_name = "android" if "android" in str(dev.get("system_version", "")).lower() else "tdesktop"
-        web_view = await client(RequestAppWebViewRequest(
-            peer=bot,
-            app=InputBotAppShortName(bot_id=bot, short_name=app_name),
-            platform=platform_name,
-            start_param=referral_param,
-            write_allowed=True
-        ))
-        
-        parsed = urllib.parse.urlparse(web_view.url)
-        params = urllib.parse.parse_qs(parsed.fragment)
-        init_data = params.get("tgWebAppData", [None])[0]
-
-    finally:
-        try:
-            await client.disconnect()
-        except Exception:
-            pass
+            last_conn_err = e
+            if cur_proxy is not None:
+                logger.info(f"[{acc_name}] Proxy error ({e}), retrying via direct cloud connection...")
+            continue
+        finally:
+            try:
+                await client.disconnect()
+            except Exception:
+                pass
 
     if not init_data:
-        result["status"] = "NO_INIT_DATA"
-        result["error"] = "Не удалось получить tgWebAppData от Telegram"
+        if last_conn_err:
+            result["status"] = "CONNECTION_ERROR"
+            result["error"] = f"Failed to connect: {last_conn_err}"
+        else:
+            result["status"] = "NO_INIT_DATA"
+            result["error"] = "Не удалось получить tgWebAppData от Telegram"
         return result
+
+    # If proxy failed for MTProto, don't use it for HTTP either
+    if connected_via_direct:
+        http_proxy = None
 
     # 2. HTTP Interaction with pixxxxelmania.io API
     http_headers = {
