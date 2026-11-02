@@ -319,7 +319,7 @@ async def run_telegram_listener():
                 sess_path,
                 cfg["api_id"],
                 cfg["api_hash"],
-                proxy=meta.get("proxy", {}).get("telethon"),
+                proxy=None, # Direct cloud connection from Frankfurt has 1ms ping & zero proxy 407 errors
                 **meta.get("device", {})
             )
 
