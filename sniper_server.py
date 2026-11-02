@@ -223,6 +223,8 @@ async def dispatch_promo_targets(targets: list):
             "elapsed_sec": elapsed
         })
 
+PROCESSED_MESSAGE_IDS = set()
+
 # --- Background Task 1: Telegram Realtime Listener ---
 async def run_telegram_listener():
     while True:
@@ -247,22 +249,58 @@ async def run_telegram_listener():
             await client.connect()
             logger.info("Realtime listener connected to Telegram MTProto!")
             channel = await client.get_entity("lh_promocodes")
-            logger.info("Listening to channel @lh_promocodes...")
+            
+            # Ensure subscribed to channel for instant MTProto push delivery
+            try:
+                from telethon.tl.functions.channels import JoinChannelRequest
+                await client(JoinChannelRequest(channel))
+                logger.info("Subscribed to @lh_promocodes for realtime updates!")
+            except Exception as e:
+                logger.info(f"Subscription status: {e}")
 
-            @client.on(events.NewMessage(chats=channel))
-            async def on_new_promo(event):
-                text = event.message.text or ""
-                logger.info(f"🚨 New promo in @lh_promocodes: {text[:100]}...")
-                targets = parse_channel_post(text, event.message.entities)
+            # Initialize last known message ID
+            try:
+                init_msgs = await client.get_messages(channel, limit=3)
+                for m in init_msgs:
+                    PROCESSED_MESSAGE_IDS.add(m.id)
+                logger.info(f"Initialized with last message ID: {init_msgs[0].id if init_msgs else 'None'}")
+            except Exception:
+                pass
+
+            def process_message(msg):
+                if msg.id in PROCESSED_MESSAGE_IDS:
+                    return
+                PROCESSED_MESSAGE_IDS.add(msg.id)
+                text = msg.text or ""
+                logger.info(f"🚨 New promo in @lh_promocodes (ID: {msg.id}): {text[:100]}...")
+                targets = parse_channel_post(text, msg.entities)
                 if targets:
                     INTERCEPTED_PROMOS.append({
-                        "id": event.message.id,
+                        "id": msg.id,
                         "date": datetime.utcnow().isoformat(),
                         "targets": targets,
                         "text_preview": text[:120]
                     })
                     asyncio.create_task(dispatch_promo_targets(targets))
 
+            @client.on(events.NewMessage(chats=channel))
+            async def on_new_promo(event):
+                process_message(event.message)
+
+            # Backup poller every 3 seconds to guarantee zero missed posts
+            async def backup_poller():
+                while client.is_connected():
+                    try:
+                        recent = await client.get_messages(channel, limit=3)
+                        for m in recent:
+                            if m.id not in PROCESSED_MESSAGE_IDS:
+                                logger.info(f"⚡ Backup poller detected new post #{m.id}!")
+                                process_message(m)
+                    except Exception:
+                        pass
+                    await asyncio.sleep(3)
+
+            asyncio.create_task(backup_poller())
             await client.run_until_disconnected()
         except Exception as e:
             logger.error(f"Listener error, reconnecting in 15s: {e}")
@@ -416,12 +454,24 @@ async def handle_manual_pixelmania(request):
     asyncio.create_task(pixelmania_runner.run_pixelmania_farm(mode="full"))
     return web.json_response({"status": "pixelmania_dispatched_in_background"})
 
+async def handle_logs(request):
+    log_content = ""
+    if os.path.exists("sniper.log"):
+        try:
+            with open("sniper.log", "r", encoding="utf-8", errors="replace") as f:
+                lines = f.readlines()
+                log_content = "".join(lines[-200:])
+        except Exception as e:
+            log_content = f"Error reading logs: {e}"
+    return web.Response(text=log_content, content_type="text/plain; charset=utf-8")
+
 def create_app():
     app = web.Application()
     app.router.add_get("/", handle_index)
     app.router.add_get("/health", handle_health)
     app.router.add_get("/harvest", handle_manual_harvest)
     app.router.add_get("/pixelmania/run", handle_manual_pixelmania)
+    app.router.add_get("/logs", handle_logs)
     app.router.add_get("/debug", handle_debug)
     return app
 
