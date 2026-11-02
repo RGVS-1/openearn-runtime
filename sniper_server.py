@@ -26,23 +26,28 @@ logging.basicConfig(
 )
 logger = logging.getLogger("all_in_one_farm")
 
-# --- VAULT AUTO-DECRYPTION ---
-VAULT_KEY = os.environ.get("VAULT_KEY")
-if VAULT_KEY and os.path.exists("vault.enc"):
-    try:
-        import io
-        import zipfile
-        from cryptography.fernet import Fernet
-        print("🔒 Encrypted vault found. Decrypting with VAULT_KEY...")
-        with open("vault.enc", "rb") as vf:
-            enc_bytes = vf.read()
-        fernet = Fernet(VAULT_KEY.encode("utf-8"))
-        dec_bytes = fernet.decrypt(enc_bytes)
-        with zipfile.ZipFile(io.BytesIO(dec_bytes), "r") as zf:
-            zf.extractall(".")
-        print("🔓 Vault successfully decrypted into workspace!")
-    except Exception as e:
-        print(f"❌ Failed to decrypt vault: {e}")
+def ensure_vault_decrypted():
+    vault_key = os.environ.get("VAULT_KEY")
+    if vault_key and os.path.exists("vault.enc") and not os.path.exists("accounts_db.json"):
+        try:
+            import io
+            import zipfile
+            from cryptography.fernet import Fernet
+            logger.info("🔒 Decrypting vault.enc with VAULT_KEY...")
+            with open("vault.enc", "rb") as vf:
+                enc_bytes = vf.read()
+            fernet = Fernet(vault_key.encode("utf-8"))
+            dec_bytes = fernet.decrypt(enc_bytes)
+            with zipfile.ZipFile(io.BytesIO(dec_bytes), "r") as zf:
+                zf.extractall(".")
+            logger.info("🔓 Vault extracted successfully!")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Failed to decrypt vault: {e}")
+            return False
+    return os.path.exists("accounts_db.json")
+
+ensure_vault_decrypted()
 
 CONFIG_PATH = "config.json"
 ACCOUNTS_DB_PATH = "accounts_db.json" if os.path.exists("accounts_db.json") else r"C:\Users\hoaki\Desktop\RB_Autimatic\accounts_db.json"
@@ -293,15 +298,26 @@ async def run_daily_harvest_schedule():
 
 # --- Web Server Endpoints ---
 async def handle_index(request):
+    ensure_vault_decrypted()
     db_data = {}
     if os.path.exists(DATABASE_PATH):
         try:
-            db_data = json.load(open(DATABASE_PATH, encoding='utf-8'))
+            with open(DATABASE_PATH, "r", encoding="utf-8", errors="replace") as f:
+                db_data = json.load(f)
+        except Exception as e:
+            logger.error(f"Error loading {DATABASE_PATH}: {e}")
+
+    tot = 0
+    stars = 0.0
+    for v in db_data.values():
+        try:
+            tot += int(v.get("tot_balance") or 0)
         except Exception:
             pass
-
-    tot = sum(v.get('tot_balance', 0) for v in db_data.values()) if db_data else 0
-    stars = sum(float(v.get('balance_stars', 0)) for v in db_data.values()) if db_data else 0.0
+        try:
+            stars += float(v.get("balance_stars") or 0)
+        except Exception:
+            pass
 
     return web.json_response({
         "service": "TheOpenEarn & Promo Sniper (All-In-One 24/7)",
@@ -322,6 +338,19 @@ async def handle_index(request):
         }
     })
 
+async def handle_debug(request):
+    vault_status = ensure_vault_decrypted()
+    return web.json_response({
+        "cwd": os.getcwd(),
+        "has_vault_key": bool(os.environ.get("VAULT_KEY")),
+        "vault_enc_exists": os.path.exists("vault.enc"),
+        "vault_decrypted": vault_status,
+        "accounts_db_exists": os.path.exists("accounts_db.json"),
+        "database_exists": os.path.exists("database.json"),
+        "sessions_count": len(os.listdir("sessions")) if os.path.exists("sessions") else 0,
+        "files": [f for f in os.listdir(".") if not f.startswith(".") and not f.endswith(".session")]
+    })
+
 async def handle_health(request):
     # Endpoint for cron-job.org to keep Render alive
     return web.json_response({"status": "ok", "uptime": "alive", "utc": datetime.utcnow().isoformat()})
@@ -335,6 +364,7 @@ def create_app():
     app.router.add_get("/", handle_index)
     app.router.add_get("/health", handle_health)
     app.router.add_get("/harvest", handle_manual_harvest)
+    app.router.add_get("/debug", handle_debug)
     return app
 
 async def main():
