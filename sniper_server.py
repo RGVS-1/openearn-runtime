@@ -15,6 +15,7 @@ from telethon.tl.functions.messages import RequestAppWebViewRequest
 from telethon.tl.types import InputBotAppShortName, MessageEntityTextUrl
 
 import harvest_all_accounts
+import pixelmania_runner
 
 logging.basicConfig(
     level=logging.INFO,
@@ -53,16 +54,20 @@ CONFIG_PATH = "config.json"
 ACCOUNTS_DB_PATH = "accounts_db.json" if os.path.exists("accounts_db.json") else r"C:\Users\hoaki\Desktop\RB_Autimatic\accounts_db.json"
 SESSIONS_DIR = "sessions"
 DATABASE_PATH = "database.json"
+PIXELMANIA_DB_PATH = "pixelmania_db.json"
 
 INTERCEPTED_PROMOS = []
 ACTIVATION_HISTORY = []
 LAST_HARVEST_DATE = None
+LAST_PIXELMANIA_DATE = None
 TOTAL_FARM_STATS = {
     "total_tot": 0,
     "total_stars": 0.0,
     "accounts_count": 0,
     "last_tapper_cycle": None,
-    "last_daily_harvest": None
+    "last_daily_harvest": None,
+    "last_pixelmania_run": None,
+    "pixelmania_status": "IDLE"
 }
 
 def parse_channel_post(text: str, entities: list = None) -> list:
@@ -296,6 +301,28 @@ async def run_daily_harvest_schedule():
         
         await asyncio.sleep(1800) # Check every 30 minutes
 
+# --- Background Task 4: Scheduled Daily Pixelmania (Claim Daily + Tasks + Mine) ---
+async def run_pixelmania_daily_schedule():
+    global LAST_PIXELMANIA_DATE
+    logger.info("Starting Pixelmania daily schedule watcher...")
+    await asyncio.sleep(45) # Initial wait after startup
+    while True:
+        try:
+            today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+            if LAST_PIXELMANIA_DATE != today_str:
+                logger.info(f"🎮 Starting daily Pixelmania run for {today_str} on all accounts...")
+                TOTAL_FARM_STATS["pixelmania_status"] = "RUNNING"
+                res = await pixelmania_runner.run_pixelmania_farm(mode="full")
+                LAST_PIXELMANIA_DATE = today_str
+                TOTAL_FARM_STATS["last_pixelmania_run"] = datetime.utcnow().isoformat()
+                TOTAL_FARM_STATS["pixelmania_status"] = "IDLE"
+                logger.info(f"Pixelmania daily run completed: {res}")
+        except Exception as e:
+            logger.error(f"Pixelmania schedule error: {e}")
+            TOTAL_FARM_STATS["pixelmania_status"] = "ERROR"
+
+        await asyncio.sleep(1800) # Check every 30 minutes
+
 # --- Web Server Endpoints ---
 async def handle_index(request):
     ensure_vault_decrypted()
@@ -319,16 +346,40 @@ async def handle_index(request):
         except Exception:
             pass
 
+    pm_db = {}
+    if os.path.exists(PIXELMANIA_DB_PATH):
+        try:
+            with open(PIXELMANIA_DB_PATH, "r", encoding="utf-8", errors="replace") as f:
+                pm_db = json.load(f)
+        except Exception:
+            pass
+
+    total_pixels_mined = sum(v.get("pixels_mined_total", 0) for v in pm_db.values())
+    golden_winners_count = 0
+    if os.path.exists("WINNERS.json"):
+        try:
+            with open("WINNERS.json", "r", encoding="utf-8") as f:
+                golden_winners_count = len(json.load(f))
+        except Exception:
+            pass
+
     return web.json_response({
-        "service": "TheOpenEarn & Promo Sniper (All-In-One 24/7)",
+        "service": "TheOpenEarn + Pixelmania & Promo Sniper (All-In-One 24/7)",
         "status": "ONLINE",
         "timestamp_utc": datetime.utcnow().isoformat(),
-        "stats": {
+        "openearn_stats": {
             "total_farm_tot": tot,
             "total_farm_stars": round(stars, 4),
             "accounts_total": len(db_data),
             "last_tapper_cycle": TOTAL_FARM_STATS["last_tapper_cycle"],
             "last_daily_harvest": TOTAL_FARM_STATS["last_daily_harvest"]
+        },
+        "pixelmania_stats": {
+            "status": TOTAL_FARM_STATS.get("pixelmania_status", "IDLE"),
+            "accounts_count": len(pm_db),
+            "total_pixels_mined": total_pixels_mined,
+            "golden_winners_count": golden_winners_count,
+            "last_run": TOTAL_FARM_STATS.get("last_pixelmania_run")
         },
         "promo_sniper": {
             "channel": "@lh_promocodes",
@@ -347,6 +398,7 @@ async def handle_debug(request):
         "vault_decrypted": vault_status,
         "accounts_db_exists": os.path.exists("accounts_db.json"),
         "database_exists": os.path.exists("database.json"),
+        "pixelmania_db_exists": os.path.exists(PIXELMANIA_DB_PATH),
         "sessions_count": len(os.listdir("sessions")) if os.path.exists("sessions") else 0,
         "files": [f for f in os.listdir(".") if not f.startswith(".") and not f.endswith(".session")]
     })
@@ -359,11 +411,17 @@ async def handle_manual_harvest(request):
     asyncio.create_task(harvest_all_accounts.main())
     return web.json_response({"status": "harvest_dispatched_in_background"})
 
+async def handle_manual_pixelmania(request):
+    TOTAL_FARM_STATS["pixelmania_status"] = "RUNNING"
+    asyncio.create_task(pixelmania_runner.run_pixelmania_farm(mode="full"))
+    return web.json_response({"status": "pixelmania_dispatched_in_background"})
+
 def create_app():
     app = web.Application()
     app.router.add_get("/", handle_index)
     app.router.add_get("/health", handle_health)
     app.router.add_get("/harvest", handle_manual_harvest)
+    app.router.add_get("/pixelmania/run", handle_manual_pixelmania)
     app.router.add_get("/debug", handle_debug)
     return app
 
@@ -379,9 +437,10 @@ async def main():
     t1 = asyncio.create_task(run_telegram_listener())
     t2 = asyncio.create_task(run_tapper_loop())
     t3 = asyncio.create_task(run_daily_harvest_schedule())
+    t4 = asyncio.create_task(run_pixelmania_daily_schedule())
 
     try:
-        await asyncio.gather(t1, t2, t3)
+        await asyncio.gather(t1, t2, t3, t4)
     except asyncio.CancelledError:
         pass
     finally:

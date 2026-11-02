@@ -1,6 +1,10 @@
 sessions/
 accounts_db.json
 database.json
+pixelmania_db.json
+mined_pixels.json
+pixelmania_config.json
+WINNERS.json
 vault_key.txt
 *.log
 __pycache__/
