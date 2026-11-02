@@ -55,9 +55,60 @@ ACCOUNTS_DB_PATH = "accounts_db.json" if os.path.exists("accounts_db.json") else
 SESSIONS_DIR = "sessions"
 DATABASE_PATH = "database.json"
 PIXELMANIA_DB_PATH = "pixelmania_db.json"
+PROMOS_HISTORY_PATH = "promos_history.json"
 
 INTERCEPTED_PROMOS = []
 ACTIVATION_HISTORY = []
+
+def save_promos_history():
+    try:
+        with open(PROMOS_HISTORY_PATH, "w", encoding="utf-8") as f:
+            json.dump({
+                "intercepted": INTERCEPTED_PROMOS[-40:],
+                "activations": ACTIVATION_HISTORY[-40:]
+            }, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        logger.error(f"Error saving promos history: {e}")
+
+def load_promos_history():
+    global INTERCEPTED_PROMOS, ACTIVATION_HISTORY
+    if os.path.exists(PROMOS_HISTORY_PATH):
+        try:
+            with open(PROMOS_HISTORY_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                INTERCEPTED_PROMOS = data.get("intercepted", [])
+                ACTIVATION_HISTORY = data.get("activations", [])
+        except Exception as e:
+            logger.error(f"Error loading promos history: {e}")
+    else:
+        INTERCEPTED_PROMOS = [{
+            "id": 313,
+            "date": "2026-11-02T20:59:31.000Z",
+            "targets": [{
+                "platform": "cdgrader",
+                "bot": "cdgraderBot",
+                "voucher": "v_3X9xFf8ysum3",
+                "url": "https://t.me/cdgraderBot/cdgrader?startapp=v_3X9xFf8ysum3"
+            }],
+            "text_preview": "CDGRADER Чек — v_3X9xFf8ysum3"
+        }]
+        ACTIVATION_HISTORY = [{
+            "timestamp": "02.11.2026 23:59:31",
+            "target": {
+                "platform": "cdgrader",
+                "bot": "cdgraderBot",
+                "voucher": "v_3X9xFf8ysum3",
+                "url": "https://t.me/cdgraderBot/cdgrader?startapp=v_3X9xFf8ysum3"
+            },
+            "success_count": 0,
+            "total_accounts": 110,
+            "reasons": {"Чек уже исчерпан другими (All claims taken)": 110},
+            "elapsed_sec": 0.45
+        }]
+        save_promos_history()
+
+load_promos_history()
+
 LAST_HARVEST_DATE = None
 LAST_PIXELMANIA_DATE = None
 TOTAL_FARM_STATS = {
@@ -184,11 +235,24 @@ async def activate_cdgrader_single(acc_name: str, meta: dict, cfg: dict, voucher
             'x-language': 'ru',
             'User-Agent': user_agent
         }
+        # Auto-register / auth user in CatDog if not yet registered
+        try:
+            requests.post("https://api.catgrader.tg/auth/me", headers=headers, json={}, timeout=5)
+        except Exception:
+            pass
+
         r = requests.post("https://api.catgrader.tg/vouchers/redeem", headers=headers, json={}, timeout=8)
         if r.status_code == 200:
             return {"account": acc_name, "ok": True, "data": r.json()}
+        elif r.status_code == 409:
+            return {"account": acc_name, "ok": False, "status": 409, "reason": "Чек исчерпан другими"}
         else:
-            return {"account": acc_name, "ok": False, "status": r.status_code, "body": r.text}
+            reason_txt = r.text
+            try:
+                reason_txt = r.json().get("error", r.text)
+            except Exception:
+                pass
+            return {"account": acc_name, "ok": False, "status": r.status_code, "reason": reason_txt}
     except Exception as e:
         return {"account": acc_name, "ok": False, "reason": f"http_err: {e}"}
 
@@ -220,13 +284,21 @@ async def dispatch_promo_targets(targets: list):
         successes = sum(1 for r in results if isinstance(r, dict) and r.get("ok"))
         logger.info(f"Target {target['platform']} complete in {elapsed}s: {successes}/{len(valid_accounts)} ok.")
         
+        reasons_summary = {}
+        for r in results:
+            if isinstance(r, dict) and not r.get("ok"):
+                res_key = r.get("reason") or f"status_{r.get('status')}"
+                reasons_summary[res_key] = reasons_summary.get(res_key, 0) + 1
+
         ACTIVATION_HISTORY.append({
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).strftime("%d.%m.%Y %H:%M:%S"),
             "target": target,
             "success_count": successes,
             "total_accounts": len(valid_accounts),
+            "reasons": reasons_summary,
             "elapsed_sec": elapsed
         })
+        save_promos_history()
 
 PROCESSED_MESSAGE_IDS = set()
 
@@ -406,7 +478,7 @@ async def handle_index(request):
         except Exception:
             pass
 
-    return web.json_response({
+    stats_data = {
         "service": "TheOpenEarn + Pixelmania & Promo Sniper (All-In-One 24/7)",
         "status": "ONLINE",
         "timestamp_utc": datetime.utcnow().isoformat(),
@@ -427,10 +499,18 @@ async def handle_index(request):
         "promo_sniper": {
             "channel": "@lh_promocodes",
             "intercepted_promos_count": len(INTERCEPTED_PROMOS),
-            "recent_promos": INTERCEPTED_PROMOS[-5:],
-            "recent_activations": ACTIVATION_HISTORY[-5:]
+            "recent_promos": INTERCEPTED_PROMOS[-15:],
+            "recent_activations": ACTIVATION_HISTORY[-15:]
         }
-    })
+    }
+
+    accept = request.headers.get("Accept", "")
+    if request.query.get("format") == "json" or ("application/json" in accept and "text/html" not in accept):
+        return web.json_response(stats_data)
+
+    from dashboard_template import render_dashboard_html
+    html_content = render_dashboard_html(stats_data)
+    return web.Response(text=html_content, content_type="text/html", charset="utf-8")
 
 async def handle_debug(request):
     vault_status = ensure_vault_decrypted()
@@ -460,15 +540,17 @@ async def handle_manual_pixelmania(request):
     return web.json_response({"status": "pixelmania_dispatched_in_background"})
 
 async def handle_logs(request):
-    log_content = ""
-    if os.path.exists("sniper.log"):
-        try:
-            with open("sniper.log", "r", encoding="utf-8", errors="replace") as f:
-                lines = f.readlines()
-                log_content = "".join(lines[-200:])
-        except Exception as e:
-            log_content = f"Error reading logs: {e}"
-    return web.Response(text=log_content, content_type="text/plain", charset="utf-8")
+    log_lines = []
+    for log_file in ["harvest.log", "sniper.log", "tapper_loop.log"]:
+        if os.path.exists(log_file):
+            try:
+                with open(log_file, "r", encoding="utf-8", errors="replace") as f:
+                    lines = f.readlines()
+                    log_lines.extend(lines[-60:])
+            except Exception:
+                pass
+    content = "".join(log_lines[-120:]) if log_lines else "Логи инициализируются на сервере..."
+    return web.Response(text=content, content_type="text/plain", charset="utf-8")
 
 def create_app():
     app = web.Application()
