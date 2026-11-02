@@ -463,7 +463,7 @@ async def handle_logs(request):
                 log_content = "".join(lines[-200:])
         except Exception as e:
             log_content = f"Error reading logs: {e}"
-    return web.Response(text=log_content, content_type="text/plain; charset=utf-8")
+    return web.Response(text=log_content, content_type="text/plain", charset="utf-8")
 
 def create_app():
     app = web.Application()
