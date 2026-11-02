@@ -1,0 +1,364 @@
+import asyncio
+import json
+import logging
+import os
+import re
+import sys
+import time
+import urllib.parse
+from datetime import datetime, timezone
+
+from aiohttp import web
+import requests
+from telethon import TelegramClient, events
+from telethon.tl.functions.messages import RequestAppWebViewRequest
+from telethon.tl.types import InputBotAppShortName, MessageEntityTextUrl
+
+import harvest_all_accounts
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+    handlers=[
+        logging.FileHandler("sniper.log", encoding="utf-8"),
+        logging.StreamHandler(sys.stdout)
+    ]
+)
+logger = logging.getLogger("all_in_one_farm")
+
+# --- VAULT AUTO-DECRYPTION ---
+VAULT_KEY = os.environ.get("VAULT_KEY")
+if VAULT_KEY and os.path.exists("vault.enc"):
+    try:
+        import io
+        import zipfile
+        from cryptography.fernet import Fernet
+        print("🔒 Encrypted vault found. Decrypting with VAULT_KEY...")
+        with open("vault.enc", "rb") as vf:
+            enc_bytes = vf.read()
+        fernet = Fernet(VAULT_KEY.encode("utf-8"))
+        dec_bytes = fernet.decrypt(enc_bytes)
+        with zipfile.ZipFile(io.BytesIO(dec_bytes), "r") as zf:
+            zf.extractall(".")
+        print("🔓 Vault successfully decrypted into workspace!")
+    except Exception as e:
+        print(f"❌ Failed to decrypt vault: {e}")
+
+CONFIG_PATH = "config.json"
+ACCOUNTS_DB_PATH = "accounts_db.json" if os.path.exists("accounts_db.json") else r"C:\Users\hoaki\Desktop\RB_Autimatic\accounts_db.json"
+SESSIONS_DIR = "sessions"
+DATABASE_PATH = "database.json"
+
+INTERCEPTED_PROMOS = []
+ACTIVATION_HISTORY = []
+LAST_HARVEST_DATE = None
+TOTAL_FARM_STATS = {
+    "total_tot": 0,
+    "total_stars": 0.0,
+    "accounts_count": 0,
+    "last_tapper_cycle": None,
+    "last_daily_harvest": None
+}
+
+def parse_channel_post(text: str, entities: list = None) -> list:
+    targets = []
+    all_urls = []
+    if entities:
+        for ent in entities:
+            if isinstance(ent, MessageEntityTextUrl):
+                all_urls.append(ent.url)
+    
+    plain_urls = re.findall(r'https?://[^\s\)]+', text)
+    all_urls.extend(plain_urls)
+    
+    for url in all_urls:
+        cd_m = re.search(r'cdgraderBot/cdgrader\?startapp=(v_[a-zA-Z0-9_\-]+)', url)
+        if cd_m:
+            targets.append({
+                "platform": "cdgrader",
+                "bot": "cdgraderBot",
+                "app_short_name": "cdgrader",
+                "voucher": cd_m.group(1),
+                "url": url
+            })
+            
+        gen_m = re.search(r't\.me/([a-zA-Z0-9_]+)/(?:[a-zA-Z0-9_]+)\?startapp=([a-zA-Z0-9_\-]+)', url)
+        if gen_m and not cd_m:
+            targets.append({
+                "platform": "generic_startapp",
+                "bot": gen_m.group(1),
+                "start_param": gen_m.group(2),
+                "url": url
+            })
+
+    code_match = re.search(r'(?:Промокод\s*[—\-:]*\s*[`"]?([A-Za-zА-Яа-я0-9_\-]+)[`"]?)', text, re.IGNORECASE)
+    if code_match:
+        code = code_match.group(1)
+        if "skinsetup_bot" in text or "SKINSET" in text:
+            targets.append({
+                "platform": "skinset",
+                "bot": "skinsetup_bot",
+                "code": code
+            })
+        elif "TheCardHouse_bot" in text or "CARDHOUSE" in text:
+            targets.append({
+                "platform": "cardhouse",
+                "bot": "TheCardHouse_bot",
+                "code": code
+            })
+        else:
+            targets.append({
+                "platform": "generic_promo",
+                "code": code,
+                "raw_text": text[:150]
+            })
+
+    return targets
+
+async def activate_cdgrader_single(acc_name: str, meta: dict, cfg: dict, voucher: str) -> dict:
+    sess_path = os.path.join(SESSIONS_DIR, f"{acc_name}.session")
+    if not os.path.exists(sess_path):
+        return {"account": acc_name, "ok": False, "reason": "no_session"}
+
+    dev = meta.get("device", {})
+    proxy = meta.get("proxy", {}).get("telethon")
+    user_agent = meta.get("user_agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+
+    client = TelegramClient(
+        sess_path,
+        cfg["api_id"],
+        cfg["api_hash"],
+        proxy=proxy,
+        device_model=dev.get("device_model", "Desktop"),
+        system_version=dev.get("system_version", "Windows 11 x64"),
+        app_version=dev.get("app_version", "4.16.8 x64"),
+        system_lang_code=dev.get("system_lang_code", "ru-RU"),
+        lang_code=dev.get("lang_code", "ru"),
+        connection_retries=1
+    )
+
+    init_data = None
+    try:
+        await asyncio.wait_for(client.connect(), timeout=12.0)
+        if not await client.is_user_authorized():
+            return {"account": acc_name, "ok": False, "reason": "unauthorized"}
+
+        bot = await client.get_entity("cdgraderBot")
+        res = await client(RequestAppWebViewRequest(
+            peer=bot,
+            app=InputBotAppShortName(bot_id=await client.get_input_entity(bot), short_name='cdgrader'),
+            platform='android',
+            start_param=voucher
+        ))
+        parsed = urllib.parse.parse_qs(urllib.parse.urlparse(res.url).fragment)
+        init_data = parsed.get('tgWebAppData', [''])[0]
+    except Exception as e:
+        return {"account": acc_name, "ok": False, "reason": f"mtproto_err: {e}"}
+    finally:
+        try:
+            await client.disconnect()
+        except Exception:
+            pass
+
+    if not init_data:
+        return {"account": acc_name, "ok": False, "reason": "no_init_data"}
+
+    try:
+        headers = {
+            'authorization': f'tma {init_data}',
+            'x-language': 'ru',
+            'User-Agent': user_agent
+        }
+        r = requests.post("https://api.catgrader.tg/vouchers/redeem", headers=headers, json={}, timeout=8)
+        if r.status_code == 200:
+            return {"account": acc_name, "ok": True, "data": r.json()}
+        else:
+            return {"account": acc_name, "ok": False, "status": r.status_code, "body": r.text}
+    except Exception as e:
+        return {"account": acc_name, "ok": False, "reason": f"http_err: {e}"}
+
+async def dispatch_promo_targets(targets: list):
+    with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+        cfg = json.load(f)
+    with open(ACCOUNTS_DB_PATH, "r", encoding="utf-8") as f:
+        rb_accs = json.load(f)
+
+    valid_accounts = [
+        acc for acc in rb_accs 
+        if acc != "[KZ] Tamosyaaaaaa +77052241850 2026"
+    ]
+
+    for target in targets:
+        logger.info(f"⚡ SNIPER: Dispatching {target['platform']} to {len(valid_accounts)} accounts...")
+        sem = asyncio.Semaphore(25)
+        
+        async def sem_task(acc):
+            async with sem:
+                if target["platform"] == "cdgrader":
+                    return await activate_cdgrader_single(acc, rb_accs[acc], cfg, target["voucher"])
+                else:
+                    return {"account": acc, "ok": False, "reason": f"unhandled platform {target['platform']}"}
+
+        start_t = time.time()
+        results = await asyncio.gather(*[sem_task(acc) for acc in valid_accounts], return_exceptions=True)
+        elapsed = round(time.time() - start_t, 2)
+        successes = sum(1 for r in results if isinstance(r, dict) and r.get("ok"))
+        logger.info(f"Target {target['platform']} complete in {elapsed}s: {successes}/{len(valid_accounts)} ok.")
+        
+        ACTIVATION_HISTORY.append({
+            "timestamp": datetime.utcnow().isoformat(),
+            "target": target,
+            "success_count": successes,
+            "total_accounts": len(valid_accounts),
+            "elapsed_sec": elapsed
+        })
+
+# --- Background Task 1: Telegram Realtime Listener ---
+async def run_telegram_listener():
+    while True:
+        try:
+            with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+                cfg = json.load(f)
+            with open(ACCOUNTS_DB_PATH, "r", encoding="utf-8") as f:
+                rb_accs = json.load(f)
+
+            acc_name = "[RU] Xxxcalibur +79936124946 2025"
+            meta = rb_accs.get(acc_name, {})
+            sess_path = os.path.join(SESSIONS_DIR, f"{acc_name}.session")
+
+            client = TelegramClient(
+                sess_path,
+                cfg["api_id"],
+                cfg["api_hash"],
+                proxy=meta.get("proxy", {}).get("telethon"),
+                **meta.get("device", {})
+            )
+
+            await client.connect()
+            logger.info("Realtime listener connected to Telegram MTProto!")
+            channel = await client.get_entity("lh_promocodes")
+            logger.info("Listening to channel @lh_promocodes...")
+
+            @client.on(events.NewMessage(chats=channel))
+            async def on_new_promo(event):
+                text = event.message.text or ""
+                logger.info(f"🚨 New promo in @lh_promocodes: {text[:100]}...")
+                targets = parse_channel_post(text, event.message.entities)
+                if targets:
+                    INTERCEPTED_PROMOS.append({
+                        "id": event.message.id,
+                        "date": datetime.utcnow().isoformat(),
+                        "targets": targets,
+                        "text_preview": text[:120]
+                    })
+                    asyncio.create_task(dispatch_promo_targets(targets))
+
+            await client.run_until_disconnected()
+        except Exception as e:
+            logger.error(f"Listener error, reconnecting in 15s: {e}")
+            await asyncio.sleep(15)
+
+# --- Background Task 2: Continuous 5-min Tapper ---
+async def run_tapper_loop():
+    logger.info("Starting background 5-minute tapper loop...")
+    await asyncio.sleep(20) # wait initial startup
+    while True:
+        try:
+            import tapper_daemon
+            await tapper_daemon.run_loop(max_rounds=1)
+            TOTAL_FARM_STATS["last_tapper_cycle"] = datetime.utcnow().isoformat()
+        except Exception as e:
+            logger.error(f"Tapper loop error: {e}")
+        
+        logger.info("Tapper cycle complete. Sleeping 310s until next cycle...")
+        await asyncio.sleep(310)
+
+# --- Background Task 3: Scheduled Daily Harvest (Checkin + Free Cases) ---
+async def run_daily_harvest_schedule():
+    global LAST_HARVEST_DATE
+    logger.info("Starting scheduled daily harvest watcher...")
+    await asyncio.sleep(10)
+    while True:
+        try:
+            today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+            if LAST_HARVEST_DATE != today_str:
+                logger.info(f"🌅 New day detected ({today_str})! Running full daily harvest on 110 accounts...")
+                await harvest_all_accounts.main()
+                LAST_HARVEST_DATE = today_str
+                TOTAL_FARM_STATS["last_daily_harvest"] = datetime.utcnow().isoformat()
+        except Exception as e:
+            logger.error(f"Daily harvest watcher error: {e}")
+        
+        await asyncio.sleep(1800) # Check every 30 minutes
+
+# --- Web Server Endpoints ---
+async def handle_index(request):
+    db_data = {}
+    if os.path.exists(DATABASE_PATH):
+        try:
+            db_data = json.load(open(DATABASE_PATH, encoding='utf-8'))
+        except Exception:
+            pass
+
+    tot = sum(v.get('tot_balance', 0) for v in db_data.values()) if db_data else 0
+    stars = sum(float(v.get('balance_stars', 0)) for v in db_data.values()) if db_data else 0.0
+
+    return web.json_response({
+        "service": "TheOpenEarn & Promo Sniper (All-In-One 24/7)",
+        "status": "ONLINE",
+        "timestamp_utc": datetime.utcnow().isoformat(),
+        "stats": {
+            "total_farm_tot": tot,
+            "total_farm_stars": round(stars, 4),
+            "accounts_total": len(db_data),
+            "last_tapper_cycle": TOTAL_FARM_STATS["last_tapper_cycle"],
+            "last_daily_harvest": TOTAL_FARM_STATS["last_daily_harvest"]
+        },
+        "promo_sniper": {
+            "channel": "@lh_promocodes",
+            "intercepted_promos_count": len(INTERCEPTED_PROMOS),
+            "recent_promos": INTERCEPTED_PROMOS[-5:],
+            "recent_activations": ACTIVATION_HISTORY[-5:]
+        }
+    })
+
+async def handle_health(request):
+    # Endpoint for cron-job.org to keep Render alive
+    return web.json_response({"status": "ok", "uptime": "alive", "utc": datetime.utcnow().isoformat()})
+
+async def handle_manual_harvest(request):
+    asyncio.create_task(harvest_all_accounts.main())
+    return web.json_response({"status": "harvest_dispatched_in_background"})
+
+def create_app():
+    app = web.Application()
+    app.router.add_get("/", handle_index)
+    app.router.add_get("/health", handle_health)
+    app.router.add_get("/harvest", handle_manual_harvest)
+    return app
+
+async def main():
+    port = int(os.getenv("PORT", 8080))
+    app = create_app()
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, "0.0.0.0", port)
+    await site.start()
+    logger.info(f"Web server online on port {port}. Ready for Render & cron-job.org.")
+
+    t1 = asyncio.create_task(run_telegram_listener())
+    t2 = asyncio.create_task(run_tapper_loop())
+    t3 = asyncio.create_task(run_daily_harvest_schedule())
+
+    try:
+        await asyncio.gather(t1, t2, t3)
+    except asyncio.CancelledError:
+        pass
+    finally:
+        await runner.cleanup()
+
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        logger.info("Process stopped.")

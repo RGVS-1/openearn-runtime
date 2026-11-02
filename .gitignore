@@ -1,0 +1,6 @@
+sessions/
+accounts_db.json
+database.json
+vault_key.txt
+*.log
+__pycache__/

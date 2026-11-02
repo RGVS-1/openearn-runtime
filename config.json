@@ -1,0 +1,18 @@
+{
+    "api_id": 32293468,
+    "api_hash": "0897266f179723de0640905e2f7860f3",
+    "referral_code": "ref_we4ses4p",
+    "referral_url": "https://t.me/TheOpenEarnBot?start=ref_we4ses4p",
+    "referral_mode": "direct",
+    "root_target_referrals": 5,
+    "max_referrals_per_account": 2,
+    "receiver_account": "[RU] Xxxcalibur +79936124946 2025",
+    "bot_username": "TheOpenEarnBot",
+    "app_bot_username": "TheOpenEarnAppBot",
+    "claim_daily_checkin": true,
+    "do_channel_tasks": true,
+    "delay_min": 12,
+    "delay_max": 25,
+    "batch_size": 5,
+    "batch_pause_sec": 45
+}
