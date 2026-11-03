@@ -1,4 +1,5 @@
 import asyncio
+import io
 import json
 import logging
 import os
@@ -9,6 +10,8 @@ import urllib.parse
 from datetime import datetime, timezone
 
 from aiohttp import web
+import numpy as np
+from PIL import Image
 import requests
 from telethon import TelegramClient, events
 from telethon.tl.functions.messages import RequestAppWebViewRequest
@@ -128,6 +131,8 @@ def parse_channel_post(text: str, entities: list = None) -> list:
         for ent in entities:
             if isinstance(ent, MessageEntityTextUrl):
                 all_urls.append(ent.url)
+            elif isinstance(ent, str):
+                all_urls.append(ent)
     
     plain_urls = re.findall(r'https?://[^\s\)]+', text)
     all_urls.extend(plain_urls)
@@ -147,6 +152,24 @@ def parse_channel_post(text: str, entities: list = None) -> list:
                 "voucher": cd_m.group(1),
                 "url": url
             })
+            continue
+
+        gb_m = re.search(r't\.me/getbonus(?:_bot)?/[a-zA-Z0-9_]+\?startapp=([a-zA-Z0-9_\-]+)', url, re.IGNORECASE)
+        if gb_m:
+            param = gb_m.group(1)
+            parts = dict(p.split('-', 1) for p in param.split('_') if '-' in p)
+            c = parts.get('promocode')
+            r = parts.get('ref', 'AHlEw3m2v8F24R5r')
+            if c:
+                targets.append({
+                    "platform": "getbonus",
+                    "bot": "getbonus",
+                    "code": c,
+                    "ref": r,
+                    "start_param": param,
+                    "url": url
+                })
+                continue
             
         gen_m = re.search(r't\.me/([a-zA-Z0-9_]+)/(?:[a-zA-Z0-9_]+)\?startapp=([a-zA-Z0-9_\-]+)', url)
         if gen_m and not cd_m:
@@ -161,31 +184,39 @@ def parse_channel_post(text: str, entities: list = None) -> list:
                 "url": url
             })
 
-    code_match = re.search(r'(?:Промокод\s*[—\-:]*\s*[`"]?([A-Za-zА-Яа-я0-9_\-]+)[`"]?)', text, re.IGNORECASE)
+    code_match = re.search(r'(?:Промокод|Код|Ваучер)\s*(?:в\s+[^\s:]+\s*)?[:\-—]\s*[`"]?([A-Za-zА-Яа-я0-9_\-]{3,})[`"]?', text, re.IGNORECASE)
     if code_match:
-        code = code_match.group(1).strip()
-        if "cdgraderBot" in text or "CDGRADER" in text or "catgrader" in text.lower():
+        text_code = code_match.group(1).strip()
+        if "getbonus" in text.lower() and not any(t.get("platform") == "getbonus" for t in targets):
+            targets.append({
+                "platform": "getbonus",
+                "bot": "getbonus",
+                "code": text_code,
+                "ref": "AHlEw3m2v8F24R5r",
+                "start_param": f"promocode-{text_code}"
+            })
+        elif ("cdgraderBot" in text or "CDGRADER" in text or "catgrader" in text.lower()) and not any(t.get("platform") in ("cdgrader", "cdgrader_promo") for t in targets):
             targets.append({
                 "platform": "cdgrader_promo",
                 "bot": "cdgraderBot",
-                "code": code
+                "code": text_code
             })
         elif "skinsetup_bot" in text or "SKINSET" in text:
             targets.append({
                 "platform": "skinset",
                 "bot": "skinsetup_bot",
-                "code": code
+                "code": text_code
             })
         elif "TheCardHouse_bot" in text or "CARDHOUSE" in text:
             targets.append({
                 "platform": "cardhouse",
                 "bot": "TheCardHouse_bot",
-                "code": code
+                "code": text_code
             })
-        else:
+        elif not targets:
             targets.append({
                 "platform": "generic_promo",
-                "code": code,
+                "code": text_code,
                 "raw_text": text[:150]
             })
 
@@ -352,6 +383,185 @@ async def activate_cdgrader_promocode_single(acc_name: str, meta: dict, cfg: dic
     except Exception as e:
         return {"account": acc_name, "ok": False, "reason": f"http_err: {e}"}
 
+def solve_getbonus_puzzle(tiles_imgs):
+    edges = []
+    for i in range(9):
+        tile_edges = []
+        for r in range(4):
+            if r == 0:
+                rot_img = tiles_imgs[i]
+            elif r == 1:
+                rot_img = tiles_imgs[i].transpose(Image.ROTATE_270)
+            elif r == 2:
+                rot_img = tiles_imgs[i].transpose(Image.ROTATE_180)
+            elif r == 3:
+                rot_img = tiles_imgs[i].transpose(Image.ROTATE_90)
+            arr = np.array(rot_img).astype(float)
+            tile_edges.append((arr[0, :, :], arr[-1, :, :], arr[:, 0, :], arr[:, -1, :]))
+        edges.append(tile_edges)
+
+    h_pairs = [(0,1), (1,2), (3,4), (4,5), (6,7), (7,8)]
+    v_pairs = [(0,3), (1,4), (2,5), (3,6), (4,7), (5,8)]
+    h_costs = {}
+    for i, j in h_pairs:
+        for r1 in range(4):
+            for r2 in range(4):
+                h_costs[(i, r1, j, r2)] = np.mean(np.abs(edges[i][r1][3] - edges[j][r2][2]))
+
+    v_costs = {}
+    for i, j in v_pairs:
+        for r1 in range(4):
+            for r2 in range(4):
+                v_costs[(i, r1, j, r2)] = np.mean(np.abs(edges[i][r1][1] - edges[j][r2][0]))
+
+    best_score = float('inf')
+    best_rot = None
+    for r0 in range(4):
+        for r1 in range(4):
+            c01 = h_costs[(0, r0, 1, r1)]
+            for r2 in range(4):
+                c12 = c01 + h_costs[(1, r1, 2, r2)]
+                for r3 in range(4):
+                    c03 = c12 + v_costs[(0, r0, 3, r3)]
+                    for r4 in range(4):
+                        c34 = c03 + h_costs[(3, r3, 4, r4)] + v_costs[(1, r1, 4, r4)]
+                        for r5 in range(4):
+                            c45 = c34 + h_costs[(4, r4, 5, r5)] + v_costs[(2, r2, 5, r5)]
+                            for r6 in range(4):
+                                c36 = c45 + v_costs[(3, r3, 6, r6)]
+                                for r7 in range(4):
+                                    c67 = c36 + h_costs[(6, r6, 7, r7)] + v_costs[(4, r4, 7, r7)]
+                                    for r8 in range(4):
+                                        total = c67 + h_costs[(7, r7, 8, r8)] + v_costs[(5, r5, 8, r8)]
+                                        if total < best_score:
+                                            best_score = total
+                                            best_rot = [r0, r1, r2, r3, r4, r5, r6, r7, r8]
+    return best_rot
+
+async def activate_getbonus_single(acc_name: str, meta: dict, cfg: dict, code: str, ref: str = "AHlEw3m2v8F24R5r", start_param: str = None) -> dict:
+    sess_path = os.path.join(SESSIONS_DIR, f"{acc_name}.session")
+    if not os.path.exists(sess_path):
+        return {"account": acc_name, "ok": False, "reason": "no_session"}
+
+    if not start_param:
+        start_param = f"promocode-{code}_ref-{ref}"
+
+    dev = meta.get("device", {})
+    proxy = meta.get("proxy", {}).get("telethon")
+
+    init_data = None
+    proxies_to_try = [proxy, None] if proxy else [None]
+    last_err = None
+
+    for cur_proxy in proxies_to_try:
+        client = TelegramClient(
+            sess_path,
+            cfg["api_id"],
+            cfg["api_hash"],
+            proxy=cur_proxy,
+            device_model=dev.get("device_model", "Desktop"),
+            system_version=dev.get("system_version", "Windows 11 x64"),
+            app_version=dev.get("app_version", "4.16.8 x64"),
+            system_lang_code=dev.get("system_lang_code", "ru-RU"),
+            lang_code=dev.get("lang_code", "ru"),
+            connection_retries=1
+        )
+        try:
+            await asyncio.wait_for(client.connect(), timeout=8.0)
+            if not await client.is_user_authorized():
+                return {"account": acc_name, "ok": False, "reason": "unauthorized"}
+
+            bot = await client.get_entity("getbonus")
+            res = await client(RequestAppWebViewRequest(
+                peer=bot,
+                app=InputBotAppShortName(bot_id=await client.get_input_entity(bot), short_name='app'),
+                platform='android',
+                start_param=start_param
+            ))
+            frag = urllib.parse.urlparse(res.url).fragment
+            qs = urllib.parse.parse_qs(frag)
+            init_data = qs.get('/?tgWebAppData', [''])[0] or qs.get('tgWebAppData', [''])[0]
+            if not init_data:
+                q = urllib.parse.parse_qs(urllib.parse.urlparse(res.url).query)
+                init_data = q.get('tgWebAppData', [''])[0]
+            break
+        except Exception as e:
+            last_err = e
+            continue
+        finally:
+            try:
+                await client.disconnect()
+            except Exception:
+                pass
+
+    if not init_data:
+        return {"account": acc_name, "ok": False, "reason": f"mtproto_err: {last_err or 'no_init_data'}"}
+
+    api_base = "https://stage.gb-platform.online/v1"
+    try:
+        r_auth = requests.post(f"{api_base}/auth/", json={
+            "initData": init_data,
+            "platform": "android",
+            "refCode": ref
+        }, timeout=10)
+        
+        if r_auth.status_code not in (200, 201):
+            return {"account": acc_name, "ok": False, "reason": f"auth_err_{r_auth.status_code}"}
+        
+        token = r_auth.json().get("body", {}).get("accessToken") or r_auth.json().get("accessToken")
+        if not token:
+            return {"account": acc_name, "ok": False, "reason": "no_token_received"}
+        
+        headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+        
+        # Check promo
+        r_check = requests.get(f"{api_base}/user/promocode/{code}/check", headers=headers, timeout=10)
+        if r_check.status_code != 200:
+            err_msg = r_check.json().get("body", {}).get("message") or r_check.text
+            return {"account": acc_name, "ok": False, "reason": err_msg}
+        
+        body = r_check.json().get("body", {})
+        conds = body.get("conditions", {})
+        conds_met = body.get("conditions_met", {})
+        
+        if conds.get("already_activated") or not conds_met.get("already_activated", True):
+            return {"account": acc_name, "ok": False, "reason": "Уже активирован"}
+        
+        if not conds_met.get("max_activations", True):
+            return {"account": acc_name, "ok": False, "reason": "Исчерпан другими"}
+        
+        captcha_token = None
+        if body.get("requires_captcha"):
+            cid = body.get("captchaId")
+            tiles = body.get("tiles", [])
+            tile_imgs = []
+            for t in tiles:
+                u = api_base + t["url"]
+                r_img = requests.get(u, headers=headers, timeout=10)
+                tile_imgs.append(Image.open(io.BytesIO(r_img.content)))
+            
+            rotations = solve_getbonus_puzzle(tile_imgs)
+            answers = [{"index": i, "clicks": rotations[i]} for i in range(9)]
+            r_v = requests.post(f"{api_base}/user/captcha/{cid}/verify", json={"answers": answers}, headers=headers, timeout=10)
+            if r_v.status_code != 200:
+                return {"account": acc_name, "ok": False, "reason": "Ошибка решения капчи"}
+            captcha_token = r_v.json().get("body", {}).get("captchaToken")
+        
+        act_payload = {"code": code}
+        if captcha_token:
+            act_payload["captchaToken"] = captcha_token
+        
+        r_act = requests.post(f"{api_base}/user/promocode/activate", json=act_payload, headers=headers, timeout=10)
+        if r_act.status_code in (200, 201):
+            rewards = r_act.json().get("body", {}).get("rewards", [])
+            reward_str = ", ".join([f"+{r.get('amount')} {r.get('type').upper()}" for r in rewards]) if rewards else "+Награда"
+            return {"account": acc_name, "ok": True, "reward": reward_str}
+        else:
+            err_msg = r_act.json().get("body", {}).get("message") or r_act.text
+            return {"account": acc_name, "ok": False, "reason": err_msg}
+    except Exception as e:
+        return {"account": acc_name, "ok": False, "reason": f"http_err: {e}"}
+
 async def dispatch_promo_targets(targets: list):
     with open(CONFIG_PATH, "r", encoding="utf-8") as f:
         cfg = json.load(f)
@@ -373,6 +583,8 @@ async def dispatch_promo_targets(targets: list):
                     return await activate_cdgrader_single(acc, rb_accs[acc], cfg, target["voucher"])
                 elif target["platform"] == "cdgrader_promo":
                     return await activate_cdgrader_promocode_single(acc, rb_accs[acc], cfg, target["code"])
+                elif target["platform"] == "getbonus":
+                    return await activate_getbonus_single(acc, rb_accs[acc], cfg, target["code"], target.get("ref", "AHlEw3m2v8F24R5r"), target.get("start_param"))
                 else:
                     return {"account": acc, "ok": False, "reason": f"unhandled platform {target['platform']}"}
 
@@ -383,10 +595,14 @@ async def dispatch_promo_targets(targets: list):
         logger.info(f"Target {target['platform']} complete in {elapsed}s: {successes}/{len(valid_accounts)} ok.")
         
         reasons_summary = {}
+        reward_summary = ""
         for r in results:
-            if isinstance(r, dict) and not r.get("ok"):
-                res_key = r.get("reason") or f"status_{r.get('status')}"
-                reasons_summary[res_key] = reasons_summary.get(res_key, 0) + 1
+            if isinstance(r, dict):
+                if not r.get("ok"):
+                    res_key = r.get("reason") or f"status_{r.get('status')}"
+                    reasons_summary[res_key] = reasons_summary.get(res_key, 0) + 1
+                elif r.get("reward") and not reward_summary:
+                    reward_summary = r.get("reward")
 
         ACTIVATION_HISTORY.append({
             "timestamp": datetime.now(timezone.utc).strftime("%d.%m.%Y %H:%M:%S"),
@@ -394,6 +610,7 @@ async def dispatch_promo_targets(targets: list):
             "success_count": successes,
             "total_accounts": len(valid_accounts),
             "reasons": reasons_summary,
+            "reward_summary": reward_summary,
             "elapsed_sec": elapsed
         })
         save_promos_history()

@@ -42,23 +42,31 @@ def render_dashboard_html(stats: dict) -> str:
             
             # Badge
             if succ > 0:
+                reward_note = act.get("reward_summary", "")
                 badge = f'<span class="bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-full text-xs font-semibold border border-emerald-500/30"><i class="fa-solid fa-circle-check mr-1"></i>Успешно: {succ}/{total}</span>'
             else:
                 badge = f'<span class="bg-amber-500/20 text-amber-400 px-2.5 py-1 rounded-full text-xs font-semibold border border-amber-500/30"><i class="fa-solid fa-circle-exclamation mr-1"></i>Не активирован (0/{total})</span>'
             
             # Format reasons breakdown
             reasons_desc = []
+            if succ > 0 and act.get("reward_summary"):
+                reasons_desc.append(f'<span class="text-emerald-300 font-bold"><i class="fa-solid fa-gift mr-1"></i>{act.get("reward_summary")}</span>')
+
             for r_key, r_cnt in reasons.items():
                 if "exhausted" in r_key.lower() or "исчерпан" in r_key.lower():
                     reasons_desc.append(f'<span class="text-amber-300">Исчерпан другими ({r_cnt} акк.)</span>')
                 elif "депозит" in r_key.lower() or "deposit" in r_key.lower():
                     reasons_desc.append(f'<span class="text-amber-300">Требуется депозит от 7 GRAM ({r_cnt} акк.)</span>')
+                elif "уже активирован" in r_key.lower() or "already_activated" in r_key.lower():
+                    reasons_desc.append(f'<span class="text-cyan-400">Уже активирован ранее ({r_cnt} акк.)</span>')
+                elif "капч" in r_key.lower() or "captcha" in r_key.lower():
+                    reasons_desc.append(f'<span class="text-purple-300">Капча не решена ({r_cnt} акк.)</span>')
                 elif "User not registered" in r_key:
                     reasons_desc.append(f'<span class="text-red-400">Не зарегистрирован в боте ({r_cnt} акк.)</span>')
                 elif "unauthorized" in r_key:
                     reasons_desc.append(f'<span class="text-rose-400">Сессия заморожена ({r_cnt} акк.)</span>')
                 elif "unhandled platform" in r_key:
-                    reasons_desc.append(f'<span class="text-slate-400">Реферальная ссылка админа канала ({r_cnt} акк.)</span>')
+                    reasons_desc.append(f'<span class="text-slate-400">Платформа в разработке ({r_cnt} акк.)</span>')
                 else:
                     reasons_desc.append(f'<span class="text-slate-400">{r_key} ({r_cnt} акк.)</span>')
             
