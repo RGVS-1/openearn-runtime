@@ -154,17 +154,6 @@ async def tap_account(acc_name: str, meta: dict, cfg: dict, db: dict = None) -> 
             real_tot = u_data.get("tot_balance", 0)
             real_stars = str(u_data.get("balance", "0"))
 
-            # 5. Lucky Wheel Auto-spin (if accumulated >= 0.25 Stars)
-            try:
-                if float(real_stars) >= 0.25:
-                    r_spin = requests.post(f"{APP_API_BASE}/wheel/spin", headers=headers, json={"is_paid": True}, timeout=6)
-                    if r_spin.status_code == 200:
-                        s_data = r_spin.json()
-                        logger.info(f"[{acc_name}] 🎰 Lucky Wheel won: {s_data.get('prize_amount')} Stars / {s_data.get('prize_type')}!")
-                        real_stars = str(s_data.get("new_balance", real_stars))
-            except Exception:
-                pass
-
             if db is not None:
                 if acc_name not in db:
                     db[acc_name] = {}
