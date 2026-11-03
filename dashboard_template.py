@@ -8,14 +8,14 @@ def render_dashboard_html(stats: dict) -> str:
     tot = openearn.get("total_farm_tot", 0)
     stars = openearn.get("total_farm_stars", 0.0)
     accs_count = openearn.get("accounts_total", 110)
-    last_tapper = openearn.get("last_tapper_cycle") or "Ожидание цикла..."
-    last_harvest = openearn.get("last_daily_harvest") or "Сегодня ещё не выполнялся"
+    last_tapper = openearn.get("last_tapper_cycle") or "В процессе..."
+    last_harvest = openearn.get("last_daily_harvest") or "Авто-сбор активен"
     
     pm_status = pixelmania.get("status", "IDLE")
     pm_accs = pixelmania.get("accounts_count", 109)
     pm_mined = pixelmania.get("total_pixels_mined", 0)
     pm_winners = pixelmania.get("golden_winners_count", 0)
-    pm_last = pixelmania.get("last_run") or "Ожидание запуска..."
+    pm_last = pixelmania.get("last_run") or "В процессе..."
     
     promos_count = sniper.get("intercepted_promos_count", 0)
     recent_activations = sniper.get("recent_activations", [])
@@ -100,43 +100,55 @@ def render_dashboard_html(stats: dict) -> str:
             animation: pulse-green 2s infinite;
         }}
         @keyframes pulse-green {{
-            0% {{ box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }}
-            70% {{ box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }}
-            100% {{ box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }}
+            0% {{
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            }}
+            70% {{
+                box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+            }}
+            100% {{
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+            }}
+        }}
+        .live-badge {{
+            animation: pulse-slow 3s infinite ease-in-out;
+        }}
+        @keyframes pulse-slow {{
+            0%, 100% {{ opacity: 1; }}
+            50% {{ opacity: 0.7; }}
         }}
     </style>
 </head>
-<body class="text-slate-100 min-h-screen pb-12">
-    <!-- Navbar -->
-    <header class="border-b border-slate-800/80 bg-slate-900/60 sticky top-0 z-50 backdrop-blur-md">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                    <i class="fa-solid fa-server text-white text-lg"></i>
+<body class="text-slate-100 min-h-screen p-4 sm:p-6 lg:p-8">
+    <div class="max-w-7xl mx-auto space-y-6">
+
+        <!-- Top Header Navigation -->
+        <header class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-800/80">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-indigo-500 to-cyan-400 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25">
+                    <i class="fa-solid fa-server text-xl"></i>
                 </div>
                 <div>
-                    <h1 class="font-bold text-lg leading-tight flex items-center gap-2">
+                    <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight flex items-center gap-2 text-white">
                         Cloud Farm & Sniper
-                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Render 24/7</span>
+                        <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">Render 24/7</span>
                     </h1>
-                    <p class="text-xs text-slate-400">TheOpenEarn • Pixelmania • @lh_promocodes</p>
+                    <p class="text-xs text-slate-400 mt-0.5">TheOpenEarn • Pixelmania • @lh_promocodes</p>
                 </div>
             </div>
 
             <div class="flex items-center gap-3">
-                <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 pulse-dot"></span>
+                <div class="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-3.5 py-1.5 rounded-full text-xs font-semibold">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 pulse-dot"></span>
                     <span>ONLINE 24/7 (Frankfurt)</span>
                 </div>
-                <button onclick="window.location.reload()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-lg border border-slate-700 transition flex items-center gap-1.5 shadow-sm">
-                    <i class="fa-solid fa-rotate text-slate-400"></i> Обновить
-                </button>
+                <div class="flex items-center gap-1.5 text-xs text-slate-400 bg-slate-900/80 px-3 py-1.5 rounded-full border border-slate-800">
+                    <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+                    <span>Live Sync <span id="sync-indicator" class="font-mono text-cyan-300">0s</span></span>
+                </div>
             </div>
-        </div>
-    </header>
+        </header>
 
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 space-y-6">
         <!-- Top Metrics Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <!-- Card 1: TOT Balance -->
@@ -147,7 +159,7 @@ def render_dashboard_html(stats: dict) -> str:
                     <i class="fa-solid fa-coins text-cyan-400 text-base"></i>
                 </div>
                 <div class="mt-3 flex items-baseline gap-2">
-                    <span class="text-3xl font-extrabold text-white tracking-tight">{tot:,}</span>
+                    <span id="stat-tot" class="text-3xl font-extrabold text-white tracking-tight">{tot:,}</span>
                     <span class="text-xs font-semibold text-cyan-400">TOT</span>
                 </div>
                 <div class="mt-2 text-xs text-slate-400 flex items-center gap-1.5">
@@ -164,7 +176,7 @@ def render_dashboard_html(stats: dict) -> str:
                     <i class="fa-solid fa-star text-amber-400 text-base"></i>
                 </div>
                 <div class="mt-3 flex items-baseline gap-2">
-                    <span class="text-3xl font-extrabold text-amber-300 tracking-tight">{stars:.4f}</span>
+                    <span id="stat-stars" class="text-3xl font-extrabold text-amber-300 tracking-tight">{stars:.4f}</span>
                     <span class="text-xs font-semibold text-amber-400">⭐</span>
                 </div>
                 <div class="mt-2 text-xs text-slate-400">
@@ -180,11 +192,11 @@ def render_dashboard_html(stats: dict) -> str:
                     <i class="fa-solid fa-cubes text-purple-400 text-base"></i>
                 </div>
                 <div class="mt-3 flex items-baseline gap-2">
-                    <span class="text-3xl font-extrabold text-purple-200 tracking-tight">{pm_mined}</span>
+                    <span id="stat-pixels" class="text-3xl font-extrabold text-purple-200 tracking-tight">{pm_mined:,}</span>
                     <span class="text-xs font-semibold text-purple-400">вскопано</span>
                 </div>
                 <div class="mt-2 text-xs text-slate-400 flex items-center justify-between">
-                    <span>Золотых призов: <strong class="text-amber-300 font-bold">{pm_winners}</strong></span>
+                    <span>Золотых призов: <strong id="stat-winners" class="text-amber-300 font-bold">{pm_winners}</strong></span>
                     <span class="text-indigo-400">109 акк.</span>
                 </div>
             </div>
@@ -197,7 +209,7 @@ def render_dashboard_html(stats: dict) -> str:
                     <i class="fa-solid fa-crosshairs text-emerald-400 text-base"></i>
                 </div>
                 <div class="mt-3 flex items-baseline gap-2">
-                    <span class="text-3xl font-extrabold text-emerald-300 tracking-tight">{promos_count}</span>
+                    <span id="stat-promos-count" class="text-3xl font-extrabold text-emerald-300 tracking-tight">{promos_count}</span>
                     <span class="text-xs font-semibold text-slate-400">перехватов</span>
                 </div>
                 <div class="mt-2 text-xs text-emerald-400 font-semibold flex items-center gap-1.5">
@@ -236,14 +248,14 @@ def render_dashboard_html(stats: dict) -> str:
                             <th class="py-3 px-4">Подробности & Ошибки</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="promos-tbody">
                         {rows_html}
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Modules Status Grid -->
+        <!-- Modules Status Grid (100% Fully Autonomous - No Redundant Manual Buttons) -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- OpenEarn Module -->
             <div class="glass-card rounded-2xl p-5 space-y-4">
@@ -259,11 +271,11 @@ def render_dashboard_html(stats: dict) -> str:
                 <div class="space-y-3 text-xs">
                     <div class="flex items-center justify-between py-2 border-b border-slate-800/50">
                         <span class="text-slate-400">Последний круг тапалки (5 мин):</span>
-                        <span class="font-mono text-slate-200">{last_tapper}</span>
+                        <span id="stat-tapper-cycle" class="font-mono text-slate-200">{last_tapper}</span>
                     </div>
                     <div class="flex items-center justify-between py-2 border-b border-slate-800/50">
                         <span class="text-slate-400">Ежедневный сбор наград:</span>
-                        <span class="font-mono text-slate-200">{last_harvest}</span>
+                        <span id="stat-harvest-cycle" class="font-mono text-slate-200">{last_harvest}</span>
                     </div>
                     <div class="flex items-center justify-between py-2 border-b border-slate-800/50">
                         <span class="text-slate-400">Энергия за цикл:</span>
@@ -271,10 +283,14 @@ def render_dashboard_html(stats: dict) -> str:
                     </div>
                 </div>
 
-                <div class="pt-2 flex items-center gap-3">
-                    <button onclick="triggerAction('/harvest', this)" class="w-full py-2.5 px-4 bg-cyan-600 hover:bg-cyan-500 active:scale-[0.98] text-white font-semibold rounded-xl text-xs transition shadow-lg shadow-cyan-600/20 flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-hand-holding-dollar"></i> Собрать чекин и кейсы прямо сейчас
-                    </button>
+                <div class="pt-2">
+                    <div class="flex items-center justify-between text-xs text-slate-400 bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
+                            <span class="text-cyan-300 font-semibold">Непрерывный авто-фарм 24/7 активен</span>
+                        </div>
+                        <span class="text-slate-500 font-mono">Тапалка (5 мин) + дейлик-кейс</span>
+                    </div>
                 </div>
             </div>
 
@@ -284,7 +300,7 @@ def render_dashboard_html(stats: dict) -> str:
                     <h3 class="font-bold text-base flex items-center gap-2 text-white">
                         <i class="fa-solid fa-wand-magic-sparkles text-purple-400"></i> Pixelmania 10M Карта
                     </h3>
-                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                    <span id="stat-pm-status" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20">
                         Статус: {pm_status}
                     </span>
                 </div>
@@ -292,22 +308,26 @@ def render_dashboard_html(stats: dict) -> str:
                 <div class="space-y-3 text-xs">
                     <div class="flex items-center justify-between py-2 border-b border-slate-800/50">
                         <span class="text-slate-400">Всего вскопано пикселей:</span>
-                        <span class="font-mono text-purple-300 font-bold">{pm_mined} точек</span>
+                        <span id="stat-pm-mined" class="font-mono text-purple-300 font-bold">{pm_mined} точек</span>
                     </div>
                     <div class="flex items-center justify-between py-2 border-b border-slate-800/50">
                         <span class="text-slate-400">Найденные золотые пиксели / призы:</span>
-                        <span class="font-mono text-amber-300 font-bold">{pm_winners}</span>
+                        <span id="stat-pm-winners" class="font-mono text-amber-300 font-bold">{pm_winners}</span>
                     </div>
                     <div class="flex items-center justify-between py-2 border-b border-slate-800/50">
                         <span class="text-slate-400">Последний запуск:</span>
-                        <span class="font-mono text-slate-200">{pm_last}</span>
+                        <span id="stat-pm-last" class="font-mono text-slate-200">{pm_last}</span>
                     </div>
                 </div>
 
-                <div class="pt-2 flex items-center gap-3">
-                    <button onclick="triggerAction('/pixelmania/run', this)" class="w-full py-2.5 px-4 bg-purple-600 hover:bg-purple-500 active:scale-[0.98] text-white font-semibold rounded-xl text-xs transition shadow-lg shadow-purple-600/20 flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-hammer"></i> Запустить копку пикселей и дейлик сейчас
-                    </button>
+                <div class="pt-2">
+                    <div class="flex items-center justify-between text-xs text-slate-400 bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-purple-400 animate-pulse"></span>
+                            <span class="text-purple-300 font-semibold">Автономная копка карты 24/7 активна</span>
+                        </div>
+                        <span class="text-slate-500 font-mono">10M карта + дейлик + задания</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -329,13 +349,88 @@ def render_dashboard_html(stats: dict) -> str:
 Загрузка логов с сервера...
             </div>
         </div>
-    </main>
+    </div>
 
     <footer class="mt-8 text-center text-xs text-slate-600">
         Автономный облачный комбайн • Пинг cron-job.org каждые 5 мин • Сервер работает 24/7
     </footer>
 
     <script>
+        let lastSyncTime = Date.now();
+        setInterval(() => {{
+            const sec = Math.round((Date.now() - lastSyncTime) / 1000);
+            const ind = document.getElementById('sync-indicator');
+            if (ind) ind.textContent = sec + 's';
+        }}, 1000);
+
+        async function updateDashboardLive() {{
+            try {{
+                const res = await fetch('/?format=json');
+                if (!res.ok) return;
+                const data = await res.json();
+                lastSyncTime = Date.now();
+
+                const openearn = data.openearn_stats || {{}};
+                const pixelmania = data.pixelmania_stats || {{}};
+                const sniper = data.promo_sniper || {{}};
+
+                // Update TOT & Stars with smooth number formatting
+                const elTot = document.getElementById('stat-tot');
+                if (elTot && openearn.total_farm_tot !== undefined) {{
+                    elTot.textContent = Number(openearn.total_farm_tot).toLocaleString();
+                }}
+
+                const elStars = document.getElementById('stat-stars');
+                if (elStars && openearn.total_farm_stars !== undefined) {{
+                    elStars.textContent = Number(openearn.total_farm_stars).toFixed(4);
+                }}
+
+                // Update Pixelmania
+                const elPixels = document.getElementById('stat-pixels');
+                if (elPixels && pixelmania.total_pixels_mined !== undefined) {{
+                    elPixels.textContent = Number(pixelmania.total_pixels_mined).toLocaleString();
+                }}
+                const elPmMined = document.getElementById('stat-pm-mined');
+                if (elPmMined && pixelmania.total_pixels_mined !== undefined) {{
+                    elPmMined.textContent = Number(pixelmania.total_pixels_mined).toLocaleString() + ' точек';
+                }}
+                const elWinners = document.getElementById('stat-winners');
+                if (elWinners && pixelmania.golden_winners_count !== undefined) {{
+                    elWinners.textContent = pixelmania.golden_winners_count;
+                }}
+                const elPmWinners = document.getElementById('stat-pm-winners');
+                if (elPmWinners && pixelmania.golden_winners_count !== undefined) {{
+                    elPmWinners.textContent = pixelmania.golden_winners_count;
+                }}
+                const elPmStatus = document.getElementById('stat-pm-status');
+                if (elPmStatus && pixelmania.status) {{
+                    elPmStatus.textContent = 'Статус: ' + pixelmania.status;
+                }}
+                const elPmLast = document.getElementById('stat-pm-last');
+                if (elPmLast && pixelmania.last_run) {{
+                    elPmLast.textContent = pixelmania.last_run;
+                }}
+
+                // Update Cycles
+                const elTapper = document.getElementById('stat-tapper-cycle');
+                if (elTapper && openearn.last_tapper_cycle) {{
+                    elTapper.textContent = openearn.last_tapper_cycle;
+                }}
+                const elHarvest = document.getElementById('stat-harvest-cycle');
+                if (elHarvest && openearn.last_daily_harvest) {{
+                    elHarvest.textContent = openearn.last_daily_harvest;
+                }}
+
+                // Update Promos
+                const elPromos = document.getElementById('stat-promos-count');
+                if (elPromos && sniper.intercepted_promos_count !== undefined) {{
+                    elPromos.textContent = sniper.intercepted_promos_count;
+                }}
+            }} catch (e) {{
+                console.error("Live sync error:", e);
+            }}
+        }}
+
         async function fetchLogs() {{
             const box = document.getElementById('terminal-logs');
             try {{
@@ -344,40 +439,19 @@ def render_dashboard_html(stats: dict) -> str:
                     const text = await res.text();
                     box.textContent = text.trim() ? text : "Лог чист, сервер в ожидании новых событий...";
                     box.scrollTop = box.scrollHeight;
-                }} else {{
-                    box.textContent = "Ошибка получения логов: " + res.status;
                 }}
             }} catch (e) {{
-                box.textContent = "Сетевая ошибка при загрузке логов: " + e;
+                console.error("Logs error:", e);
             }}
         }}
 
-        async function triggerAction(endpoint, btn) {{
-            const originalText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Запуск в фоне...';
-            try {{
-                const res = await fetch(endpoint);
-                const data = await res.json();
-                btn.innerHTML = '<i class="fa-solid fa-check text-emerald-300"></i> Запущено!';
-                setTimeout(() => {{
-                    btn.disabled = false;
-                    btn.innerHTML = originalText;
-                    window.location.reload();
-                }}, 2000);
-            }} catch (e) {{
-                btn.innerHTML = '<i class="fa-solid fa-xmark text-rose-300"></i> Ошибка запуска';
-                setTimeout(() => {{
-                    btn.disabled = false;
-                    btn.innerHTML = originalText;
-                }}, 2500);
-            }}
-        }}
+        // Run live update every 3.5 seconds without page reload
+        updateDashboardLive();
+        setInterval(updateDashboardLive, 3500);
 
-        // Auto fetch logs on load and auto refresh page every 15s
+        // Fetch logs every 6 seconds
         fetchLogs();
-        setInterval(fetchLogs, 8000);
-        setTimeout(() => {{ window.location.reload(); }}, 15000);
+        setInterval(fetchLogs, 6000);
     </script>
 </body>
 </html>"""

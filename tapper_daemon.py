@@ -28,61 +28,75 @@ logging.basicConfig(
 logger = logging.getLogger("tapper_daemon")
 
 CONFIG_PATH = "config.json"
+DATABASE_PATH = "database.json"
 ACCOUNTS_DB_PATH = "accounts_db.json" if os.path.exists("accounts_db.json") else r"C:\Users\hoaki\Desktop\RB_Autimatic\accounts_db.json"
 APP_API_BASE = "https://app.theopenearn.info/api"
 
-async def get_init_data(client, account_name: str) -> str:
-    app_bot = await client.get_entity("TheOpenEarnAppBot")
-    res = await client(RequestAppWebViewRequest(
-        peer=app_bot,
-        app=InputBotAppShortName(bot_id=await client.get_input_entity(app_bot), short_name='run'),
-        platform='android',
-        start_param='ref_we4ses4p'
-    ))
-    parsed = urllib.parse.parse_qs(urllib.parse.urlparse(res.url).fragment)
-    return parsed.get('tgWebAppData', [''])[0]
+# Cache for init_data: {acc_name: (init_data, timestamp)}
+INITDATA_CACHE = {}
 
-async def tap_account(acc_name: str, meta: dict, cfg: dict) -> int:
+async def get_init_data_with_fallback(acc_name: str, meta: dict, cfg: dict) -> str:
+    # Check cache first (valid for 2 hours)
+    now = time.time()
+    if acc_name in INITDATA_CACHE:
+        cached_data, cached_at = INITDATA_CACHE[acc_name]
+        if now - cached_at < 7200:
+            return cached_data
+
     sess_path = os.path.join("sessions", f"{acc_name}.session")
     if not os.path.exists(sess_path):
-        return 0
+        return None
 
     dev = meta.get("device", {})
     proxy = meta.get("proxy", {}).get("telethon")
-    user_agent = meta.get("user_agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-
-    client = TelegramClient(
-        sess_path,
-        cfg["api_id"],
-        cfg["api_hash"],
-        proxy=proxy,
-        device_model=dev.get("device_model", "Desktop"),
-        system_version=dev.get("system_version", "Windows 11 x64"),
-        app_version=dev.get("app_version", "4.16.8 x64"),
-        system_lang_code=dev.get("system_lang_code", "ru-RU"),
-        lang_code=dev.get("lang_code", "ru"),
-        connection_retries=2,
-        retry_delay=1
-    )
+    proxies_to_try = [proxy, None] if proxy else [None]
 
     init_data = None
-    try:
-        await asyncio.wait_for(client.connect(), timeout=15.0)
-        if not await client.is_user_authorized():
-            return 0
-        init_data = await get_init_data(client, acc_name)
-    except Exception as e:
-        logger.debug(f"[{acc_name}] MTProto connect error: {e}")
-        return 0
-    finally:
+    for cur_proxy in proxies_to_try:
+        client = TelegramClient(
+            sess_path,
+            cfg["api_id"],
+            cfg["api_hash"],
+            proxy=cur_proxy,
+            device_model=dev.get("device_model", "Desktop"),
+            system_version=dev.get("system_version", "Windows 11 x64"),
+            app_version=dev.get("app_version", "4.16.8 x64"),
+            system_lang_code=dev.get("system_lang_code", "ru-RU"),
+            lang_code=dev.get("lang_code", "ru"),
+            connection_retries=1
+        )
         try:
-            await client.disconnect()
+            await asyncio.wait_for(client.connect(), timeout=12.0)
+            if not await client.is_user_authorized():
+                return None
+            app_bot = await client.get_entity("TheOpenEarnAppBot")
+            res = await client(RequestAppWebViewRequest(
+                peer=app_bot,
+                app=InputBotAppShortName(bot_id=await client.get_input_entity(app_bot), short_name='run'),
+                platform='android',
+                start_param='ref_we4ses4p'
+            ))
+            parsed = urllib.parse.parse_qs(urllib.parse.urlparse(res.url).fragment)
+            init_data = parsed.get('tgWebAppData', [''])[0]
+            if init_data:
+                INITDATA_CACHE[acc_name] = (init_data, now)
+                break
         except Exception:
-            pass
+            continue
+        finally:
+            try:
+                await client.disconnect()
+            except Exception:
+                pass
 
+    return init_data
+
+async def tap_account(acc_name: str, meta: dict, cfg: dict, db: dict = None) -> int:
+    init_data = await get_init_data_with_fallback(acc_name, meta, cfg)
     if not init_data:
         return 0
 
+    user_agent = meta.get("user_agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"tma {init_data}",
@@ -91,8 +105,14 @@ async def tap_account(acc_name: str, meta: dict, cfg: dict) -> int:
         "Referer": "https://app.theopenearn.info/"
     }
 
+    tapped_earned = 0
     try:
         r_tap_st = requests.get(f"{APP_API_BASE}/earn", headers=headers, timeout=10)
+        if r_tap_st.status_code == 401:
+            # Token expired, clear cache
+            INITDATA_CACHE.pop(acc_name, None)
+            return 0
+
         if r_tap_st.status_code == 200:
             t_data = r_tap_st.json()
             req_taps = t_data.get("taps_required", 100)
@@ -101,42 +121,66 @@ async def tap_account(acc_name: str, meta: dict, cfg: dict) -> int:
             if needed > 0 and not t_data.get("cooldown_until"):
                 r_tap = requests.post(f"{APP_API_BASE}/earn", headers=headers, json={"taps": needed}, timeout=10)
                 if r_tap.status_code == 200:
+                    tapped_earned = 100
                     logger.info(f"[{acc_name}] +100 TOT tapped!")
-                    return 100
+
+        # Always fetch latest user profile to keep database.json synced with real-time balances
+        r_user = requests.get(f"{APP_API_BASE}/user", headers=headers, timeout=10)
+        if r_user.status_code == 200:
+            u_data = r_user.json()
+            real_tot = u_data.get("tot_balance", 0)
+            real_stars = str(u_data.get("balance", "0"))
+            if db is not None:
+                if acc_name not in db:
+                    db[acc_name] = {}
+                db[acc_name]["tot_balance"] = real_tot
+                db[acc_name]["balance_stars"] = real_stars
+                db[acc_name]["last_tap_at"] = datetime.utcnow().isoformat()
     except Exception as e:
         logger.debug(f"[{acc_name}] Tap error: {e}")
 
-    return 0
+    return tapped_earned
 
-async def run_loop(max_rounds: int = 100):
+async def run_loop(max_rounds: int = 1):
     with open(CONFIG_PATH, "r", encoding="utf-8") as f:
         cfg = json.load(f)
     with open(ACCOUNTS_DB_PATH, "r", encoding="utf-8") as f:
         rb_accs = json.load(f)
+
+    db = {}
+    if os.path.exists(DATABASE_PATH):
+        try:
+            with open(DATABASE_PATH, "r", encoding="utf-8") as f:
+                db = json.load(f)
+        except Exception:
+            db = {}
 
     target_accounts = [
         acc for acc in rb_accs 
         if acc != "[KZ] Tamosyaaaaaa +77052241850 2026"
     ]
 
-    logger.info(f"Tapper Daemon started with {len(target_accounts)} accounts.")
+    logger.info(f"⚡ Tapper Loop: Starting cycle for {len(target_accounts)} accounts...")
 
     for round_num in range(1, max_rounds + 1):
         round_start = time.time()
         round_earned = 0
-        logger.info(f"--- STARTING TAP ROUND #{round_num} ---")
 
         for idx, acc in enumerate(target_accounts, 1):
-            earned = await tap_account(acc, rb_accs[acc], cfg)
+            earned = await tap_account(acc, rb_accs[acc], cfg, db)
             round_earned += earned
-            await asyncio.sleep(0.5)
+            if idx % 5 == 0 or idx == len(target_accounts):
+                # Save database periodically so dashboard updates live
+                try:
+                    with open(DATABASE_PATH, "w", encoding="utf-8") as f:
+                        json.dump(db, f, indent=2, ensure_ascii=False)
+                except Exception:
+                    pass
+            await asyncio.sleep(0.3)
 
-        elapsed = time.time() - round_start
-        logger.info(f"Round #{round_num} finished! Earned: +{round_earned} TOT in {round(elapsed, 1)}s")
-
-        cooldown_wait = max(10, int(310 - elapsed))
-        logger.info(f"Waiting {cooldown_wait} seconds for the next 5-min cooldown window...")
-        await asyncio.sleep(cooldown_wait)
+        elapsed = round(time.time() - round_start, 1)
+        tot_sum = sum(int(v.get("tot_balance", 0) or 0) for v in db.values())
+        logger.info(f"✅ Tapper Cycle Complete in {elapsed}s! Total Farm Balance: {tot_sum:,} TOT (+{round_earned} this cycle).")
 
 if __name__ == "__main__":
     asyncio.run(run_loop())
