@@ -527,6 +527,9 @@ async def activate_getbonus_single(acc_name: str, meta: dict, cfg: dict, code: s
         if conds.get("already_activated") or not conds_met.get("already_activated", True):
             return {"account": acc_name, "ok": False, "reason": "Уже активирован"}
         
+        if not conds_met.get("after_24h", True):
+            return {"account": acc_name, "ok": False, "reason": "Доступен через 24 ч после входа в бота"}
+
         if not conds_met.get("max_activations", True):
             return {"account": acc_name, "ok": False, "reason": "Исчерпан другими"}
         
@@ -558,6 +561,10 @@ async def activate_getbonus_single(acc_name: str, meta: dict, cfg: dict, code: s
             return {"account": acc_name, "ok": True, "reward": reward_str}
         else:
             err_msg = r_act.json().get("body", {}).get("message") or r_act.text
+            if err_msg == "PROMOCODE_AVAILABLE_AFTER_24H":
+                err_msg = "Доступен через 24 ч после входа в бота"
+            elif err_msg == "PROMOCODE_EXHAUSTED":
+                err_msg = "Исчерпан другими"
             return {"account": acc_name, "ok": False, "reason": err_msg}
     except Exception as e:
         return {"account": acc_name, "ok": False, "reason": f"http_err: {e}"}
@@ -650,15 +657,6 @@ async def run_telegram_listener():
             except Exception as e:
                 logger.info(f"Subscription status: {e}")
 
-            # Initialize last known message ID
-            try:
-                init_msgs = await client.get_messages(channel, limit=3)
-                for m in init_msgs:
-                    PROCESSED_MESSAGE_IDS.add(m.id)
-                logger.info(f"Initialized with last message ID: {init_msgs[0].id if init_msgs else 'None'}")
-            except Exception:
-                pass
-
             def process_message(msg):
                 if msg.id in PROCESSED_MESSAGE_IDS:
                     return
@@ -669,7 +667,7 @@ async def run_telegram_listener():
                 if targets:
                     INTERCEPTED_PROMOS.append({
                         "id": msg.id,
-                        "date": datetime.utcnow().isoformat(),
+                        "date": datetime.now(timezone.utc).isoformat(),
                         "targets": targets,
                         "text_preview": text[:120]
                     })
@@ -679,11 +677,28 @@ async def run_telegram_listener():
             async def on_new_promo(event):
                 process_message(event.message)
 
+            # Check recent messages on startup so no post during restart/deploy is missed
+            try:
+                init_msgs = await client.get_messages(channel, limit=10)
+                now_utc = datetime.now(timezone.utc)
+                for m in reversed(init_msgs):
+                    m_date = m.date if m.date.tzinfo else m.date.replace(tzinfo=timezone.utc)
+                    age_sec = (now_utc - m_date).total_seconds()
+                    # Catch any recent promo posted within the last hour
+                    if age_sec < 3600 and m.id not in PROCESSED_MESSAGE_IDS:
+                        logger.info(f"⚡ Startup catch-up: Processing recent post #{m.id} ({age_sec:.0f}s old)...")
+                        process_message(m)
+                    else:
+                        PROCESSED_MESSAGE_IDS.add(m.id)
+                logger.info(f"Initialized listener with {len(PROCESSED_MESSAGE_IDS)} messages.")
+            except Exception as e:
+                logger.warning(f"Error checking initial messages: {e}")
+
             # Backup poller every 3 seconds to guarantee zero missed posts
             async def backup_poller():
                 while client.is_connected():
                     try:
-                        recent = await client.get_messages(channel, limit=3)
+                        recent = await client.get_messages(channel, limit=5)
                         for m in recent:
                             if m.id not in PROCESSED_MESSAGE_IDS:
                                 logger.info(f"⚡ Backup poller detected new post #{m.id}!")

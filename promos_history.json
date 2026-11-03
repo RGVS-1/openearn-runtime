@@ -1,0 +1,97 @@
+{
+  "intercepted": [
+    {
+      "id": 313,
+      "date": "2026-11-02T20:59:31.000Z",
+      "targets": [
+        {
+          "platform": "cdgrader",
+          "bot": "cdgraderBot",
+          "voucher": "v_3X9xFf8ysum3",
+          "url": "https://t.me/cdgraderBot/cdgrader?startapp=v_3X9xFf8ysum3"
+        }
+      ],
+      "text_preview": "CDGRADER Чек — v_3X9xFf8ysum3"
+    },
+    {
+      "id": 315,
+      "date": "2026-11-03T10:37:57.000Z",
+      "targets": [
+        {
+          "platform": "getbonus",
+          "bot": "getbonus",
+          "code": "NEXIK",
+          "ref": "AHlEw3m2v8F24R5r",
+          "start_param": "promocode-NEXIK_ref-AHlEw3m2v8F24R5r",
+          "url": "https://t.me/getbonus/app?startapp=promocode-NEXIK_ref-AHlEw3m2v8F24R5r"
+        }
+      ],
+      "text_preview": "GETBONUS Чек — promocode-NEXIK"
+    },
+    {
+      "id": 323,
+      "date": "2026-11-03T16:52:12.000Z",
+      "targets": [
+        {
+          "platform": "getbonus",
+          "bot": "getbonus",
+          "code": "GETBONUS2026",
+          "ref": "JpNs5Z3SdMBetFcNeg",
+          "start_param": "promocode-GETBONUS2026",
+          "url": "https://t.me/getbonus/app?startapp=promocode-GETBONUS2026"
+        }
+      ],
+      "text_preview": "GETBONUS Чек — promocode-GETBONUS2026"
+    }
+  ],
+  "activations": [
+    {
+      "timestamp": "02.11.2026 23:59:31",
+      "target": {
+        "platform": "cdgrader",
+        "bot": "cdgraderBot",
+        "voucher": "v_3X9xFf8ysum3",
+        "url": "https://t.me/cdgraderBot/cdgrader?startapp=v_3X9xFf8ysum3"
+      },
+      "success_count": 0,
+      "total_accounts": 110,
+      "reasons": {
+        "Чек уже исчерпан другими (All claims taken)": 110
+      },
+      "elapsed_sec": 0.45
+    },
+    {
+      "timestamp": "03.11.2026 13:37:57",
+      "target": {
+        "platform": "getbonus",
+        "bot": "getbonus",
+        "code": "NEXIK",
+        "ref": "AHlEw3m2v8F24R5r",
+        "start_param": "promocode-NEXIK_ref-AHlEw3m2v8F24R5r"
+      },
+      "success_count": 1,
+      "total_accounts": 110,
+      "reward_summary": "+0.1 USD",
+      "reasons": {
+        "Капча решена успешно": 1
+      },
+      "elapsed_sec": 1.2
+    },
+    {
+      "timestamp": "03.11.2026 19:52:12",
+      "target": {
+        "platform": "getbonus",
+        "bot": "getbonus",
+        "code": "GETBONUS2026",
+        "ref": "JpNs5Z3SdMBetFcNeg",
+        "start_param": "promocode-GETBONUS2026"
+      },
+      "success_count": 0,
+      "total_accounts": 110,
+      "reasons": {
+        "Доступен через 24 ч после входа в бота": 110
+      },
+      "elapsed_sec": 0.85
+    }
+  ]
+}

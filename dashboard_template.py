@@ -57,6 +57,8 @@ def render_dashboard_html(stats: dict) -> str:
                     reasons_desc.append(f'<span class="text-amber-300">Исчерпан другими ({r_cnt} акк.)</span>')
                 elif "депозит" in r_key.lower() or "deposit" in r_key.lower():
                     reasons_desc.append(f'<span class="text-amber-300">Требуется депозит от 7 GRAM ({r_cnt} акк.)</span>')
+                elif "24 ч" in r_key.lower() or "after_24h" in r_key.lower() or "24h" in r_key.lower():
+                    reasons_desc.append(f'<span class="text-amber-300">Доступен через 24 ч после входа ({r_cnt} акк.)</span>')
                 elif "уже активирован" in r_key.lower() or "already_activated" in r_key.lower():
                     reasons_desc.append(f'<span class="text-cyan-400">Уже активирован ранее ({r_cnt} акк.)</span>')
                 elif "капч" in r_key.lower() or "captcha" in r_key.lower():
