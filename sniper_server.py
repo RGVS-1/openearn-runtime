@@ -4,6 +4,8 @@ import json
 import logging
 import os
 import re
+import secrets
+import shutil
 import sys
 import time
 import urllib.parse
@@ -14,8 +16,8 @@ import numpy as np
 from PIL import Image
 import requests
 from telethon import TelegramClient, events
-from telethon.tl.functions.messages import RequestAppWebViewRequest
-from telethon.tl.types import InputBotAppShortName, MessageEntityTextUrl
+from telethon.tl.functions.messages import RequestAppWebViewRequest, RequestWebViewRequest
+from telethon.tl.types import InputBotAppShortName, MessageEntityTextUrl, MessageEntityCode
 
 import harvest_all_accounts
 import pixelmania_runner
@@ -124,33 +126,56 @@ TOTAL_FARM_STATS = {
     "pixelmania_status": "IDLE"
 }
 
-def parse_channel_post(text: str, entities: list = None) -> list:
+def parse_channel_post(raw_text: str, entities: list = None, reply_markup = None) -> list:
     targets = []
+    
+    # Extract URLs from entities, buttons, and regex
     all_urls = []
+    extracted_codes = []
     if entities:
         for ent in entities:
             if isinstance(ent, MessageEntityTextUrl):
                 all_urls.append(ent.url)
-            elif isinstance(ent, str):
-                all_urls.append(ent)
-    
-    plain_urls = re.findall(r'https?://[^\s\)]+', text)
+            elif isinstance(ent, MessageEntityCode):
+                code_val = raw_text[ent.offset : ent.offset + ent.length].strip()
+                if code_val and len(code_val) >= 3:
+                    extracted_codes.append(code_val)
+                    
+    if reply_markup and hasattr(reply_markup, 'rows'):
+        for row in reply_markup.rows:
+            for btn in getattr(row, 'buttons', []):
+                btn_url = getattr(btn, 'url', None)
+                if btn_url:
+                    all_urls.append(btn_url)
+
+    plain_urls = re.findall(r'https?://[^\s\)\*]+', raw_text)
     all_urls.extend(plain_urls)
     
     unique_urls = []
     for u in all_urls:
         if u not in unique_urls:
             unique_urls.append(u)
-    
+            
+    # Check URL targets first
     for url in unique_urls:
         cd_m = re.search(r'cdgraderBot/cdgrader\?startapp=(v_[a-zA-Z0-9_\-]+)', url)
         if cd_m:
             targets.append({
-                "platform": "cdgrader",
-                "bot": "cdgraderBot",
-                "app_short_name": "cdgrader",
-                "voucher": cd_m.group(1),
-                "url": url
+                'platform': 'cdgrader',
+                'bot': 'cdgraderBot',
+                'app_short_name': 'cdgrader',
+                'voucher': cd_m.group(1),
+                'url': url
+            })
+            continue
+
+        pawn_m = re.search(r't\.me/pawn_bot(?:\/[a-zA-Z0-9_]+)?\?startapp=(promo_[a-zA-Z0-9_\-]+)', url, re.IGNORECASE)
+        if pawn_m:
+            targets.append({
+                'platform': 'pawn',
+                'bot': 'pawn_bot',
+                'link': pawn_m.group(1),
+                'url': url
             })
             continue
 
@@ -162,77 +187,81 @@ def parse_channel_post(text: str, entities: list = None) -> list:
             r = parts.get('ref', 'AHlEw3m2v8F24R5r')
             if c:
                 targets.append({
-                    "platform": "getbonus",
-                    "bot": "getbonus",
-                    "code": c,
-                    "ref": r,
-                    "start_param": param,
-                    "url": url
+                    'platform': 'getbonus',
+                    'bot': 'getbonus',
+                    'code': c,
+                    'ref': r,
+                    'start_param': param,
+                    'url': url
                 })
                 continue
-            
-        gen_m = re.search(r't\.me/([a-zA-Z0-9_]+)/(?:[a-zA-Z0-9_]+)\?startapp=([a-zA-Z0-9_\-]+)', url)
-        if gen_m and not cd_m:
-            param = gen_m.group(2)
-            # Skip pure referral IDs (e.g. 7556464696, ref_7556464696)
-            if param.isdigit() or param.startswith("ref_") or param.startswith("ref"):
-                continue
-            targets.append({
-                "platform": "generic_startapp",
-                "bot": gen_m.group(1),
-                "start_param": param,
-                "url": url
-            })
 
-    code_match = re.search(r'(?:Промокод|Код|Ваучер)\s*(?:в\s+[^\s:]+\s*)?[:\-—]\s*[`"]?([A-Za-zА-Яа-я0-9_\-]{3,})[`"]?', text, re.IGNORECASE)
+    # Strip markdown symbols for clean regex search
+    clean_text = re.sub(r'[*_`]', '', raw_text)
+    
+    code_match = re.search(r'(?:Промокод|Код|Ваучер)\s*(?:в\s+[^\s:]+\s*)?[:\-—]\s*([A-Za-zА-Яа-я0-9_\-]{3,})', clean_text, re.IGNORECASE)
+    found_code = None
     if code_match:
-        text_code = code_match.group(1).strip()
-        if "getbonus" in text.lower() and not any(t.get("platform") == "getbonus" for t in targets):
+        found_code = code_match.group(1).strip()
+    elif extracted_codes:
+        found_code = extracted_codes[0]
+        
+    if found_code:
+        full_content = (raw_text + ' ' + ' '.join(unique_urls)).lower()
+        if 'skinset' in full_content or 'skinsetup_bot' in full_content:
             targets.append({
-                "platform": "getbonus",
-                "bot": "getbonus",
-                "code": text_code,
-                "ref": "AHlEw3m2v8F24R5r",
-                "start_param": f"promocode-{text_code}"
+                'platform': 'skinset',
+                'bot': 'skinsetup_bot',
+                'code': found_code
             })
-        elif ("cdgraderBot" in text or "CDGRADER" in text or "catgrader" in text.lower()) and not any(t.get("platform") in ("cdgrader", "cdgrader_promo") for t in targets):
+        elif 'cdgrader' in full_content or 'catgrader' in full_content:
+            if not any(t.get('platform') in ('cdgrader', 'cdgrader_promo') for t in targets):
+                targets.append({
+                    'platform': 'cdgrader_promo',
+                    'bot': 'cdgraderBot',
+                    'code': found_code
+                })
+        elif 'cardhouse' in full_content or 'thecardhouse_bot' in full_content:
             targets.append({
-                "platform": "cdgrader_promo",
-                "bot": "cdgraderBot",
-                "code": text_code
+                'platform': 'cardhouse',
+                'bot': 'TheCardHouse_bot',
+                'code': found_code
             })
-        elif "skinsetup_bot" in text or "SKINSET" in text:
-            targets.append({
-                "platform": "skinset",
-                "bot": "skinsetup_bot",
-                "code": text_code
-            })
-        elif "TheCardHouse_bot" in text or "CARDHOUSE" in text:
-            targets.append({
-                "platform": "cardhouse",
-                "bot": "TheCardHouse_bot",
-                "code": text_code
-            })
+        elif 'pawn' in full_content or 'pawn_bot' in full_content:
+            if not any(t.get('platform') == 'pawn' for t in targets):
+                targets.append({
+                    'platform': 'pawn',
+                    'bot': 'pawn_bot',
+                    'code': found_code
+                })
+        elif 'getbonus' in full_content:
+            if not any(t.get('platform') == 'getbonus' for t in targets):
+                targets.append({
+                    'platform': 'getbonus',
+                    'bot': 'getbonus',
+                    'code': found_code,
+                    'ref': 'AHlEw3m2v8F24R5r',
+                    'start_param': f'promocode-{found_code}'
+                })
         elif not targets:
             targets.append({
-                "platform": "generic_promo",
-                "code": text_code,
-                "raw_text": text[:150]
+                'platform': 'generic_promo',
+                'code': found_code,
+                'raw_text': raw_text[:150]
             })
 
     return targets
 
-async def activate_cdgrader_single(acc_name: str, meta: dict, cfg: dict, voucher: str) -> dict:
+async def get_telegram_webapp_init_data(acc_name: str, meta: dict, cfg: dict, bot_username: str, url: str = None, app_short_name: str = None, start_param: str = None, platform: str = 'android') -> tuple:
     sess_path = os.path.join(SESSIONS_DIR, f"{acc_name}.session")
     if not os.path.exists(sess_path):
-        return {"account": acc_name, "ok": False, "reason": "no_session"}
+        return None, "no_session"
 
     dev = meta.get("device", {})
     proxy = meta.get("proxy", {}).get("telethon")
-    user_agent = meta.get("user_agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
 
-    init_data = None
-    proxies_to_try = [proxy, None] if proxy else [None]
+    is_cloud = bool(os.environ.get("RENDER")) or os.name != "nt"
+    proxies_to_try = [None, proxy] if is_cloud else ([proxy, None] if proxy else [None])
     last_err = None
 
     for cur_proxy in proxies_to_try:
@@ -249,31 +278,57 @@ async def activate_cdgrader_single(acc_name: str, meta: dict, cfg: dict, voucher
             connection_retries=1
         )
         try:
-            await asyncio.wait_for(client.connect(), timeout=8.0)
+            await asyncio.wait_for(client.connect(), timeout=6.0)
             if not await client.is_user_authorized():
-                return {"account": acc_name, "ok": False, "reason": "unauthorized"}
+                await client.disconnect()
+                return None, "unauthorized"
 
-            bot = await client.get_entity("cdgraderBot")
-            res = await client(RequestAppWebViewRequest(
-                peer=bot,
-                app=InputBotAppShortName(bot_id=await client.get_input_entity(bot), short_name='cdgrader'),
-                platform='android',
-                start_param=voucher
-            ))
-            parsed = urllib.parse.parse_qs(urllib.parse.urlparse(res.url).fragment)
-            init_data = parsed.get('tgWebAppData', [''])[0]
-            break
+            bot = await client.get_entity(bot_username)
+            if app_short_name:
+                app_peer = await client.get_input_entity(bot)
+                kwargs = {
+                    'peer': bot,
+                    'app': InputBotAppShortName(bot_id=app_peer, short_name=app_short_name),
+                    'platform': platform
+                }
+                if start_param:
+                    kwargs['start_param'] = start_param
+                res = await client(RequestAppWebViewRequest(**kwargs))
+            else:
+                res = await client(RequestWebViewRequest(
+                    peer=bot,
+                    bot=bot,
+                    url=url,
+                    platform=platform
+                ))
+            
+            parsed_fragment = urllib.parse.parse_qs(urllib.parse.urlparse(res.url).fragment)
+            init_data = parsed_fragment.get('tgWebAppData', [''])[0] or parsed_fragment.get('/?tgWebAppData', [''])[0]
+            if not init_data:
+                parsed_query = urllib.parse.parse_qs(urllib.parse.urlparse(res.url).query)
+                init_data = parsed_query.get('tgWebAppData', [''])[0] or parsed_query.get('/?tgWebAppData', [''])[0]
+                
+            await client.disconnect()
+            if init_data:
+                return init_data, None
+            else:
+                last_err = "empty_tgWebAppData"
         except Exception as e:
-            last_err = e
-            continue
-        finally:
+            err_str = str(e).strip()
+            last_err = f"{type(e).__name__}: {err_str}" if err_str else type(e).__name__
             try:
                 await client.disconnect()
             except Exception:
                 pass
+            continue
 
+    return None, last_err or "connection_failed"
+
+async def activate_cdgrader_single(acc_name: str, meta: dict, cfg: dict, voucher: str) -> dict:
+    user_agent = meta.get("user_agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+    init_data, err = await get_telegram_webapp_init_data(acc_name, meta, cfg, "cdgraderBot", app_short_name="cdgrader", start_param=voucher)
     if not init_data:
-        return {"account": acc_name, "ok": False, "reason": f"mtproto_err: {last_err or 'no_init_data'}"}
+        return {"account": acc_name, "ok": False, "reason": f"mtproto_err: {err}"}
 
     try:
         headers = {
@@ -281,7 +336,6 @@ async def activate_cdgrader_single(acc_name: str, meta: dict, cfg: dict, voucher
             'x-language': 'ru',
             'User-Agent': user_agent
         }
-        # Auto-register / auth user in CatDog if not yet registered
         try:
             requests.post("https://api.catgrader.tg/auth/me", headers=headers, json={}, timeout=5)
         except Exception:
@@ -303,56 +357,10 @@ async def activate_cdgrader_single(acc_name: str, meta: dict, cfg: dict, voucher
         return {"account": acc_name, "ok": False, "reason": f"http_err: {e}"}
 
 async def activate_cdgrader_promocode_single(acc_name: str, meta: dict, cfg: dict, code: str) -> dict:
-    sess_path = os.path.join(SESSIONS_DIR, f"{acc_name}.session")
-    if not os.path.exists(sess_path):
-        return {"account": acc_name, "ok": False, "reason": "no_session"}
-
-    dev = meta.get("device", {})
-    proxy = meta.get("proxy", {}).get("telethon")
     user_agent = meta.get("user_agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-
-    init_data = None
-    proxies_to_try = [proxy, None] if proxy else [None]
-    last_err = None
-
-    for cur_proxy in proxies_to_try:
-        client = TelegramClient(
-            sess_path,
-            cfg["api_id"],
-            cfg["api_hash"],
-            proxy=cur_proxy,
-            device_model=dev.get("device_model", "Desktop"),
-            system_version=dev.get("system_version", "Windows 11 x64"),
-            app_version=dev.get("app_version", "4.16.8 x64"),
-            system_lang_code=dev.get("system_lang_code", "ru-RU"),
-            lang_code=dev.get("lang_code", "ru"),
-            connection_retries=1
-        )
-        try:
-            await asyncio.wait_for(client.connect(), timeout=8.0)
-            if not await client.is_user_authorized():
-                return {"account": acc_name, "ok": False, "reason": "unauthorized"}
-
-            bot = await client.get_entity("cdgraderBot")
-            res = await client(RequestAppWebViewRequest(
-                peer=bot,
-                app=InputBotAppShortName(bot_id=await client.get_input_entity(bot), short_name='cdgrader'),
-                platform='android'
-            ))
-            parsed = urllib.parse.parse_qs(urllib.parse.urlparse(res.url).fragment)
-            init_data = parsed.get('tgWebAppData', [''])[0]
-            break
-        except Exception as e:
-            last_err = e
-            continue
-        finally:
-            try:
-                await client.disconnect()
-            except Exception:
-                pass
-
+    init_data, err = await get_telegram_webapp_init_data(acc_name, meta, cfg, "cdgraderBot", app_short_name="cdgrader")
     if not init_data:
-        return {"account": acc_name, "ok": False, "reason": f"mtproto_err: {last_err or 'no_init_data'}"}
+        return {"account": acc_name, "ok": False, "reason": f"mtproto_err: {err}"}
 
     try:
         headers = {
@@ -360,7 +368,6 @@ async def activate_cdgrader_promocode_single(acc_name: str, meta: dict, cfg: dic
             'x-language': 'ru',
             'User-Agent': user_agent
         }
-        # Auto-register / auth user in CatDog if not yet registered
         try:
             requests.post("https://api.catgrader.tg/auth/me", headers=headers, json={}, timeout=5)
         except Exception:
@@ -368,11 +375,7 @@ async def activate_cdgrader_promocode_single(acc_name: str, meta: dict, cfg: dic
 
         r = requests.post("https://api.catgrader.tg/promocodes/redeem", headers=headers, json={"code": code}, timeout=8)
         if r.status_code == 200:
-            return {"account": acc_name, "ok": True, "data": r.json()}
-        elif r.status_code == 403:
-            return {"account": acc_name, "ok": False, "status": 403, "reason": "Требуется депозит от 7 GRAM"}
-        elif r.status_code == 409:
-            return {"account": acc_name, "ok": False, "status": 409, "reason": "Промокод исчерпан другими"}
+            return {"account": acc_name, "ok": True, "reward": f"+{r.json().get('reward', 'ok')} CDGRADER"}
         else:
             reason_txt = r.text
             try:
@@ -439,63 +442,12 @@ def solve_getbonus_puzzle(tiles_imgs):
     return best_rot
 
 async def activate_getbonus_single(acc_name: str, meta: dict, cfg: dict, code: str, ref: str = "AHlEw3m2v8F24R5r", start_param: str = None) -> dict:
-    sess_path = os.path.join(SESSIONS_DIR, f"{acc_name}.session")
-    if not os.path.exists(sess_path):
-        return {"account": acc_name, "ok": False, "reason": "no_session"}
-
     if not start_param:
         start_param = f"promocode-{code}_ref-{ref}"
 
-    dev = meta.get("device", {})
-    proxy = meta.get("proxy", {}).get("telethon")
-
-    init_data = None
-    proxies_to_try = [proxy, None] if proxy else [None]
-    last_err = None
-
-    for cur_proxy in proxies_to_try:
-        client = TelegramClient(
-            sess_path,
-            cfg["api_id"],
-            cfg["api_hash"],
-            proxy=cur_proxy,
-            device_model=dev.get("device_model", "Desktop"),
-            system_version=dev.get("system_version", "Windows 11 x64"),
-            app_version=dev.get("app_version", "4.16.8 x64"),
-            system_lang_code=dev.get("system_lang_code", "ru-RU"),
-            lang_code=dev.get("lang_code", "ru"),
-            connection_retries=1
-        )
-        try:
-            await asyncio.wait_for(client.connect(), timeout=8.0)
-            if not await client.is_user_authorized():
-                return {"account": acc_name, "ok": False, "reason": "unauthorized"}
-
-            bot = await client.get_entity("getbonus")
-            res = await client(RequestAppWebViewRequest(
-                peer=bot,
-                app=InputBotAppShortName(bot_id=await client.get_input_entity(bot), short_name='app'),
-                platform='android',
-                start_param=start_param
-            ))
-            frag = urllib.parse.urlparse(res.url).fragment
-            qs = urllib.parse.parse_qs(frag)
-            init_data = qs.get('/?tgWebAppData', [''])[0] or qs.get('tgWebAppData', [''])[0]
-            if not init_data:
-                q = urllib.parse.parse_qs(urllib.parse.urlparse(res.url).query)
-                init_data = q.get('tgWebAppData', [''])[0]
-            break
-        except Exception as e:
-            last_err = e
-            continue
-        finally:
-            try:
-                await client.disconnect()
-            except Exception:
-                pass
-
+    init_data, err = await get_telegram_webapp_init_data(acc_name, meta, cfg, "getbonus", app_short_name="app", start_param=start_param)
     if not init_data:
-        return {"account": acc_name, "ok": False, "reason": f"mtproto_err: {last_err or 'no_init_data'}"}
+        return {"account": acc_name, "ok": False, "reason": f"mtproto_err: {err}"}
 
     api_base = "https://stage.gb-platform.online/v1"
     try:
@@ -514,7 +466,6 @@ async def activate_getbonus_single(acc_name: str, meta: dict, cfg: dict, code: s
         
         headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
         
-        # Check promo
         r_check = requests.get(f"{api_base}/user/promocode/{code}/check", headers=headers, timeout=10)
         if r_check.status_code != 200:
             err_msg = r_check.json().get("body", {}).get("message") or r_check.text
@@ -569,6 +520,95 @@ async def activate_getbonus_single(acc_name: str, meta: dict, cfg: dict, code: s
     except Exception as e:
         return {"account": acc_name, "ok": False, "reason": f"http_err: {e}"}
 
+async def activate_skinset_single(acc_name: str, meta: dict, cfg: dict, code: str) -> dict:
+    user_agent = meta.get("user_agent", "Mozilla/5.0 (Linux; Android 14; SM-S928B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36")
+    init_data, err = await get_telegram_webapp_init_data(acc_name, meta, cfg, "skinsetup_bot", url="https://skinset.su/")
+    if not init_data:
+        return {"account": acc_name, "ok": False, "reason": f"mtproto_err: {err}"}
+
+    try:
+        headers = {
+            'Authorization': f'tma {init_data}',
+            'Content-Type': 'application/json',
+            'User-Agent': user_agent
+        }
+        r = requests.post("https://skinset.su/api/promo/redeem", headers=headers, json={"code": code}, timeout=8)
+        data = r.json() if r.text else {}
+        if r.status_code == 200:
+            reward = data.get("amount") or data.get("reward") or "ок"
+            return {"account": acc_name, "ok": True, "reward": f"+{reward} Сетов"}
+        else:
+            err_msg = data.get("error") or data.get("message") or data.get("detail") or f"status_{r.status_code}"
+            return {"account": acc_name, "ok": False, "reason": err_msg}
+    except Exception as e:
+        return {"account": acc_name, "ok": False, "reason": f"http_err: {e}"}
+
+async def activate_cardhouse_single(acc_name: str, meta: dict, cfg: dict, code: str) -> dict:
+    user_agent = meta.get("user_agent", "Mozilla/5.0 (Linux; Android 14; SM-S928B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36")
+    init_data, err = await get_telegram_webapp_init_data(acc_name, meta, cfg, "TheCardHouse_bot", url="https://app.villapps.fun/")
+    if not init_data:
+        return {"account": acc_name, "ok": False, "reason": f"mtproto_err: {err}"}
+
+    try:
+        tg_id = None
+        user_param = urllib.parse.parse_qs(init_data).get("user", ["{}"])[0]
+        try:
+            tg_id = json.loads(user_param).get("id")
+        except Exception:
+            pass
+
+        device_id = secrets.token_hex(24)
+        headers = {
+            'Accept': 'application/json, text/plain, */*',
+            'User-Agent': user_agent,
+            'X-Cardhouse-Device-Id': device_id,
+            'X-Cardhouse-Telegram-Platform': 'android',
+            'X-Telegram-Init-Data': init_data
+        }
+        try:
+            r_prof = requests.get(f'https://app.villapps.fun/api/user/profile?telegram_id={tg_id}', headers=headers, timeout=8)
+            if r_prof.status_code == 200:
+                st = r_prof.json().get("session_token")
+                if st:
+                    headers['X-Cardhouse-Session-Token'] = st
+        except Exception:
+            pass
+
+        r = requests.post(f'https://app.villapps.fun/api/promo/apply?telegram_id={tg_id}', headers=headers, json={"code": code}, timeout=8)
+        data = r.json() if r.text else {}
+        if r.status_code == 200:
+            reward = data.get("reward") or data.get("amount") or "ок"
+            return {"account": acc_name, "ok": True, "reward": f"+{reward} CardHouse"}
+        else:
+            err_msg = data.get("detail") or data.get("error") or data.get("message") or f"status_{r.status_code}"
+            return {"account": acc_name, "ok": False, "reason": err_msg}
+    except Exception as e:
+        return {"account": acc_name, "ok": False, "reason": f"http_err: {e}"}
+
+async def activate_pawn_single(acc_name: str, meta: dict, cfg: dict, code: str = None, link: str = None) -> dict:
+    user_agent = meta.get("user_agent", "Mozilla/5.0 (Linux; Android 14; SM-S928B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36")
+    init_data, err = await get_telegram_webapp_init_data(acc_name, meta, cfg, "pawn_bot", url="https://pawn-frontend.onrender.com/?mode=fullscreen")
+    if not init_data:
+        return {"account": acc_name, "ok": False, "reason": f"mtproto_err: {err}"}
+
+    try:
+        headers = {
+            'Authorization': f'tma {init_data}',
+            'Content-Type': 'application/json',
+            'User-Agent': user_agent
+        }
+        body = {"link": link} if link else {"code": code}
+        r = requests.post("https://pawn-backend.onrender.com/api/promo/activate", headers=headers, json=body, timeout=8)
+        data = r.json() if r.text else {}
+        if r.status_code == 200:
+            reward = data.get("reward") or data.get("kind") or "ок"
+            return {"account": acc_name, "ok": True, "reward": f"+{reward} Pawn"}
+        else:
+            err_msg = data.get("detail") or data.get("error") or data.get("message") or f"status_{r.status_code}"
+            return {"account": acc_name, "ok": False, "reason": err_msg}
+    except Exception as e:
+        return {"account": acc_name, "ok": False, "reason": f"http_err: {e}"}
+
 async def dispatch_promo_targets(targets: list):
     with open(CONFIG_PATH, "r", encoding="utf-8") as f:
         cfg = json.load(f)
@@ -592,6 +632,12 @@ async def dispatch_promo_targets(targets: list):
                     return await activate_cdgrader_promocode_single(acc, rb_accs[acc], cfg, target["code"])
                 elif target["platform"] == "getbonus":
                     return await activate_getbonus_single(acc, rb_accs[acc], cfg, target["code"], target.get("ref", "AHlEw3m2v8F24R5r"), target.get("start_param"))
+                elif target["platform"] == "skinset":
+                    return await activate_skinset_single(acc, rb_accs[acc], cfg, target["code"])
+                elif target["platform"] == "cardhouse":
+                    return await activate_cardhouse_single(acc, rb_accs[acc], cfg, target["code"])
+                elif target["platform"] == "pawn":
+                    return await activate_pawn_single(acc, rb_accs[acc], cfg, code=target.get("code"), link=target.get("link"))
                 else:
                     return {"account": acc, "ok": False, "reason": f"unhandled platform {target['platform']}"}
 
@@ -622,7 +668,7 @@ async def dispatch_promo_targets(targets: list):
         })
         save_promos_history()
 
-PROCESSED_MESSAGE_IDS = set()
+PROCESSED_MESSAGE_IDS = {p.get("id") for p in INTERCEPTED_PROMOS if isinstance(p, dict) and "id" in p}
 
 # --- Background Task 1: Telegram Realtime Listener ---
 async def run_telegram_listener():
@@ -635,7 +681,11 @@ async def run_telegram_listener():
 
             acc_name = "[RU] Xxxcalibur +79936124946 2025"
             meta = rb_accs.get(acc_name, {})
-            sess_path = os.path.join(SESSIONS_DIR, f"{acc_name}.session")
+            src_sess = os.path.join(SESSIONS_DIR, f"{acc_name}.session")
+            listener_sess = os.path.join(SESSIONS_DIR, "listener.session")
+            if not os.path.exists(listener_sess) and os.path.exists(src_sess):
+                shutil.copy2(src_sess, listener_sess)
+            sess_path = listener_sess if os.path.exists(listener_sess) else src_sess
 
             client = TelegramClient(
                 sess_path,
@@ -661,9 +711,9 @@ async def run_telegram_listener():
                 if msg.id in PROCESSED_MESSAGE_IDS:
                     return
                 PROCESSED_MESSAGE_IDS.add(msg.id)
-                text = msg.text or ""
-                logger.info(f"🚨 New promo in @lh_promocodes (ID: {msg.id}): {text[:100]}...")
-                targets = parse_channel_post(text, msg.entities)
+                raw_text = msg.raw_text or msg.message or msg.text or ""
+                logger.info(f"🚨 New promo in @lh_promocodes (ID: {msg.id}): {raw_text[:100]}...")
+                targets = parse_channel_post(raw_text, msg.entities, getattr(msg, 'reply_markup', None))
                 if targets:
                     INTERCEPTED_PROMOS.append({
                         "id": msg.id,
