@@ -49,7 +49,7 @@ async def get_init_data_with_fallback(acc_name: str, meta: dict, cfg: dict) -> s
 
     dev = meta.get("device", {})
     proxy = meta.get("proxy", {}).get("telethon")
-    proxies_to_try = [proxy, None] if proxy else [None]
+    proxies_to_try = [None, proxy] if (os.environ.get("RENDER") or not proxy) else [proxy, None]
 
     init_data = None
     for cur_proxy in proxies_to_try:
@@ -107,6 +107,29 @@ async def tap_account(acc_name: str, meta: dict, cfg: dict, db: dict = None) -> 
 
     tapped_earned = 0
     try:
+        # 1. Daily Check-in (+15..30 TOT)
+        try:
+            r_ci = requests.post(f"{APP_API_BASE}/checkin/claim", headers=headers, json={"platform": "android"}, timeout=5)
+            if r_ci.status_code == 200:
+                logger.info(f"[{acc_name}] Daily check-in claimed!")
+        except Exception:
+            pass
+
+        # 2. Daily Free Case (Win Stars & Gifts)
+        try:
+            r_case = requests.post(f"{APP_API_BASE}/case/open", headers=headers, timeout=5)
+            if r_case.status_code == 200:
+                c_data = r_case.json()
+                logger.info(f"[{acc_name}] 🎁 Won Daily Free Case: {c_data.get('prize_amount')} Stars / {c_data.get('label')}!")
+                try:
+                    requests.post(f"{APP_API_BASE}/case/friends/shared", headers=headers, timeout=3)
+                    requests.post(f"{APP_API_BASE}/case/story/shared", headers=headers, timeout=3)
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
+        # 3. Tapper Game (+100 TOT)
         r_tap_st = requests.get(f"{APP_API_BASE}/earn", headers=headers, timeout=10)
         if r_tap_st.status_code == 401:
             # Token expired, clear cache
@@ -124,12 +147,24 @@ async def tap_account(acc_name: str, meta: dict, cfg: dict, db: dict = None) -> 
                     tapped_earned = 100
                     logger.info(f"[{acc_name}] +100 TOT tapped!")
 
-        # Always fetch latest user profile to keep database.json synced with real-time balances
+        # 4. Always fetch latest user profile to keep database.json synced with real-time balances
         r_user = requests.get(f"{APP_API_BASE}/user", headers=headers, timeout=10)
         if r_user.status_code == 200:
             u_data = r_user.json()
             real_tot = u_data.get("tot_balance", 0)
             real_stars = str(u_data.get("balance", "0"))
+
+            # 5. Lucky Wheel Auto-spin (if accumulated >= 0.25 Stars)
+            try:
+                if float(real_stars) >= 0.25:
+                    r_spin = requests.post(f"{APP_API_BASE}/wheel/spin", headers=headers, json={"is_paid": True}, timeout=6)
+                    if r_spin.status_code == 200:
+                        s_data = r_spin.json()
+                        logger.info(f"[{acc_name}] 🎰 Lucky Wheel won: {s_data.get('prize_amount')} Stars / {s_data.get('prize_type')}!")
+                        real_stars = str(s_data.get("new_balance", real_stars))
+            except Exception:
+                pass
+
             if db is not None:
                 if acc_name not in db:
                     db[acc_name] = {}

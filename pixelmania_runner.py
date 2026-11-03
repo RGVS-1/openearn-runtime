@@ -132,14 +132,16 @@ async def run_pixelmania_farm(mode: str = "full") -> dict:
                 if res.get("golden_found"):
                     stats["golden_found"] += 1
 
-                # Update database record
+                # Update database record using authoritative season_mined from server API
                 prev_record = db.get(acc_name, {})
                 prev_mined = prev_record.get("pixels_mined_total", 0)
+                season_mined = res.get("season_mined", 0)
+                actual_mined = max(prev_mined, season_mined, prev_mined + res.get("pixels_mined", 0))
                 db[acc_name] = {
                     "account_name": acc_name,
                     "phone": res.get("phone", prev_record.get("phone")),
                     "stars": res.get("remaining_stars", 0),
-                    "pixels_mined_total": prev_mined + res.get("pixels_mined", 0),
+                    "pixels_mined_total": actual_mined,
                     "golden_pixel_found": res.get("golden_found", False) or prev_record.get("golden_pixel_found", False),
                     "status": "ACTIVE",
                     "last_run": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")

@@ -83,15 +83,16 @@ async def run_single_account(
         "daily_claimed": False,
         "tasks_claimed": 0,
         "pixels_mined": 0,
+        "season_mined": 0,
         "golden_found": False,
         "initial_stars": 0,
         "remaining_stars": 0,
         "error": None
     }
 
-    # 1. Connect Telegram Client with automatic proxy fallback
+    # 1. Connect Telegram Client with automatic proxy fallback (direct first on cloud/Render)
     init_data = None
-    proxies_to_try = [tel_proxy, None] if tel_proxy else [None]
+    proxies_to_try = [None, tel_proxy] if (os.environ.get("RENDER") or not tel_proxy) else [tel_proxy, None]
     last_conn_err = None
     connected_via_direct = False
 
@@ -218,9 +219,14 @@ async def run_single_account(
             http.headers["X-CSRF-Token"] = csrf
             http.headers["X-State-Epoch"] = epoch
 
-            wallet = auth_res.get("data", {}).get("me", {}).get("wallet", {})
+            me_data = auth_res.get("data", {}).get("me", {})
+            wallet = me_data.get("wallet", {})
             stars = int(wallet.get("mainStars", 0)) + int(wallet.get("freePixels", 0)) + int(wallet.get("totalStars", 0))
             result["initial_stars"] = stars
+            try:
+                result["season_mined"] = int(me_data.get("seasonMined", 0))
+            except Exception:
+                result["season_mined"] = 0
 
             # 2.2 Claim Daily Pixel
             if config.get("claim_daily", True):
@@ -279,7 +285,12 @@ async def run_single_account(
                         me_json = r_me.json()
                         epoch = me_json.get("stateEpoch", epoch)
                         http.headers["X-State-Epoch"] = epoch
-                        wallet = me_json.get("data", {}).get("wallet", wallet)
+                        me_inner = me_json.get("data", {})
+                        wallet = me_inner.get("wallet", wallet)
+                        try:
+                            result["season_mined"] = int(me_inner.get("seasonMined", result.get("season_mined", 0)))
+                        except Exception:
+                            pass
                 except Exception:
                     pass
 
@@ -354,6 +365,7 @@ async def run_single_account(
                         m_res = mine_json.get("data", {})
 
                         result["pixels_mined"] += 1
+                        result["season_mined"] = result.get("season_mined", 0) + 1
                         map_mgr.mark_coordinate(x, y)
 
                         # Check for victory / golden pixel / gifts!

@@ -489,7 +489,9 @@ async def run_tapper_loop():
         try:
             import tapper_daemon
             await tapper_daemon.run_loop(max_rounds=1)
-            TOTAL_FARM_STATS["last_tapper_cycle"] = datetime.utcnow().isoformat()
+            now_iso = datetime.utcnow().isoformat()
+            TOTAL_FARM_STATS["last_tapper_cycle"] = now_iso
+            TOTAL_FARM_STATS["last_daily_harvest"] = now_iso
         except Exception as e:
             logger.error(f"Tapper loop error: {e}")
         
