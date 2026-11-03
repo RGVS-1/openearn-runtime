@@ -35,7 +35,7 @@ def render_dashboard_html(stats: dict) -> str:
             time_str = act.get("timestamp", "-")
             target = act.get("target", {})
             platform = target.get("platform", "Unknown")
-            voucher = target.get("voucher") or target.get("start_param") or target.get("url", "-")
+            voucher = target.get("code") or target.get("voucher") or target.get("start_param") or target.get("url", "-")
             succ = act.get("success_count", 0)
             total = act.get("total_accounts", 110)
             reasons = act.get("reasons", {})
@@ -50,11 +50,15 @@ def render_dashboard_html(stats: dict) -> str:
             reasons_desc = []
             for r_key, r_cnt in reasons.items():
                 if "exhausted" in r_key.lower() or "исчерпан" in r_key.lower():
-                    reasons_desc.append(f'<span class="text-amber-300">Чек исчерпан другими ({r_cnt} акк.)</span>')
+                    reasons_desc.append(f'<span class="text-amber-300">Исчерпан другими ({r_cnt} акк.)</span>')
+                elif "депозит" in r_key.lower() or "deposit" in r_key.lower():
+                    reasons_desc.append(f'<span class="text-amber-300">Требуется депозит от 7 GRAM ({r_cnt} акк.)</span>')
                 elif "User not registered" in r_key:
                     reasons_desc.append(f'<span class="text-red-400">Не зарегистрирован в боте ({r_cnt} акк.)</span>')
                 elif "unauthorized" in r_key:
                     reasons_desc.append(f'<span class="text-rose-400">Сессия заморожена ({r_cnt} акк.)</span>')
+                elif "unhandled platform" in r_key:
+                    reasons_desc.append(f'<span class="text-slate-400">Реферальная ссылка админа канала ({r_cnt} акк.)</span>')
                 else:
                     reasons_desc.append(f'<span class="text-slate-400">{r_key} ({r_cnt} акк.)</span>')
             

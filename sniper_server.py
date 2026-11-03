@@ -150,17 +150,27 @@ def parse_channel_post(text: str, entities: list = None) -> list:
             
         gen_m = re.search(r't\.me/([a-zA-Z0-9_]+)/(?:[a-zA-Z0-9_]+)\?startapp=([a-zA-Z0-9_\-]+)', url)
         if gen_m and not cd_m:
+            param = gen_m.group(2)
+            # Skip pure referral IDs (e.g. 7556464696, ref_7556464696)
+            if param.isdigit() or param.startswith("ref_") or param.startswith("ref"):
+                continue
             targets.append({
                 "platform": "generic_startapp",
                 "bot": gen_m.group(1),
-                "start_param": gen_m.group(2),
+                "start_param": param,
                 "url": url
             })
 
     code_match = re.search(r'(?:Промокод\s*[—\-:]*\s*[`"]?([A-Za-zА-Яа-я0-9_\-]+)[`"]?)', text, re.IGNORECASE)
     if code_match:
-        code = code_match.group(1)
-        if "skinsetup_bot" in text or "SKINSET" in text:
+        code = code_match.group(1).strip()
+        if "cdgraderBot" in text or "CDGRADER" in text or "catgrader" in text.lower():
+            targets.append({
+                "platform": "cdgrader_promo",
+                "bot": "cdgraderBot",
+                "code": code
+            })
+        elif "skinsetup_bot" in text or "SKINSET" in text:
             targets.append({
                 "platform": "skinset",
                 "bot": "skinsetup_bot",
@@ -261,6 +271,87 @@ async def activate_cdgrader_single(acc_name: str, meta: dict, cfg: dict, voucher
     except Exception as e:
         return {"account": acc_name, "ok": False, "reason": f"http_err: {e}"}
 
+async def activate_cdgrader_promocode_single(acc_name: str, meta: dict, cfg: dict, code: str) -> dict:
+    sess_path = os.path.join(SESSIONS_DIR, f"{acc_name}.session")
+    if not os.path.exists(sess_path):
+        return {"account": acc_name, "ok": False, "reason": "no_session"}
+
+    dev = meta.get("device", {})
+    proxy = meta.get("proxy", {}).get("telethon")
+    user_agent = meta.get("user_agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+
+    init_data = None
+    proxies_to_try = [proxy, None] if proxy else [None]
+    last_err = None
+
+    for cur_proxy in proxies_to_try:
+        client = TelegramClient(
+            sess_path,
+            cfg["api_id"],
+            cfg["api_hash"],
+            proxy=cur_proxy,
+            device_model=dev.get("device_model", "Desktop"),
+            system_version=dev.get("system_version", "Windows 11 x64"),
+            app_version=dev.get("app_version", "4.16.8 x64"),
+            system_lang_code=dev.get("system_lang_code", "ru-RU"),
+            lang_code=dev.get("lang_code", "ru"),
+            connection_retries=1
+        )
+        try:
+            await asyncio.wait_for(client.connect(), timeout=8.0)
+            if not await client.is_user_authorized():
+                return {"account": acc_name, "ok": False, "reason": "unauthorized"}
+
+            bot = await client.get_entity("cdgraderBot")
+            res = await client(RequestAppWebViewRequest(
+                peer=bot,
+                app=InputBotAppShortName(bot_id=await client.get_input_entity(bot), short_name='cdgrader'),
+                platform='android'
+            ))
+            parsed = urllib.parse.parse_qs(urllib.parse.urlparse(res.url).fragment)
+            init_data = parsed.get('tgWebAppData', [''])[0]
+            break
+        except Exception as e:
+            last_err = e
+            continue
+        finally:
+            try:
+                await client.disconnect()
+            except Exception:
+                pass
+
+    if not init_data:
+        return {"account": acc_name, "ok": False, "reason": f"mtproto_err: {last_err or 'no_init_data'}"}
+
+    try:
+        headers = {
+            'authorization': f'tma {init_data}',
+            'x-language': 'ru',
+            'User-Agent': user_agent
+        }
+        # Auto-register / auth user in CatDog if not yet registered
+        try:
+            requests.post("https://api.catgrader.tg/auth/me", headers=headers, json={}, timeout=5)
+        except Exception:
+            pass
+
+        r = requests.post("https://api.catgrader.tg/promocodes/redeem", headers=headers, json={"code": code}, timeout=8)
+        if r.status_code == 200:
+            return {"account": acc_name, "ok": True, "data": r.json()}
+        elif r.status_code == 403:
+            return {"account": acc_name, "ok": False, "status": 403, "reason": "Требуется депозит от 7 GRAM"}
+        elif r.status_code == 409:
+            return {"account": acc_name, "ok": False, "status": 409, "reason": "Промокод исчерпан другими"}
+        else:
+            reason_txt = r.text
+            try:
+                reason_txt = r.json().get("error", r.text)
+            except Exception:
+                pass
+            return {"account": acc_name, "ok": False, "status": r.status_code, "reason": reason_txt}
+    except Exception as e:
+        return {"account": acc_name, "ok": False, "reason": f"http_err: {e}"}
+
 async def dispatch_promo_targets(targets: list):
     with open(CONFIG_PATH, "r", encoding="utf-8") as f:
         cfg = json.load(f)
@@ -280,6 +371,8 @@ async def dispatch_promo_targets(targets: list):
             async with sem:
                 if target["platform"] == "cdgrader":
                     return await activate_cdgrader_single(acc, rb_accs[acc], cfg, target["voucher"])
+                elif target["platform"] == "cdgrader_promo":
+                    return await activate_cdgrader_promocode_single(acc, rb_accs[acc], cfg, target["code"])
                 else:
                     return {"account": acc, "ok": False, "reason": f"unhandled platform {target['platform']}"}
 
