@@ -719,7 +719,7 @@ async def run_telegram_listener():
                         "id": msg.id,
                         "date": datetime.now(timezone.utc).isoformat(),
                         "targets": targets,
-                        "text_preview": text[:120]
+                        "text_preview": raw_text[:120]
                     })
                     asyncio.create_task(dispatch_promo_targets(targets))
 
