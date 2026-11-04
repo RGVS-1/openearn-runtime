@@ -34,7 +34,7 @@ logger = logging.getLogger("all_in_one_farm")
 
 def ensure_vault_decrypted():
     vault_key = os.environ.get("VAULT_KEY")
-    if vault_key and os.path.exists("vault.enc") and not os.path.exists("accounts_db.json"):
+    if vault_key and os.path.exists("vault.enc"):
         try:
             import io
             import zipfile

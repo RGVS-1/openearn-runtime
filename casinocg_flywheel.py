@@ -345,36 +345,59 @@ class CasinoCGWorker:
             bal = w_info.get("balance", res["balance"])
             res["balance"] = bal
 
-            # 6. Automated Wagering (Hi-Lo strategy)
+            # 6. Automated Wagering (Humanized: Mix of Mines + Hi-Lo + Floating Bets + Delays)
             rounds = 0
-            while not w_info.get("eligible") and rounds < 50 and bal >= 0.1:
+            while not w_info.get("eligible") and rounds < 45 and bal >= 0.05:
                 rounds += 1
+                bet = round(random.uniform(0.06, min(0.14, bal)), 2)
+                game_type = random.choice(["mines", "hilo", "mines"])
+
                 try:
-                    h_st = sess.post(f"{self.web_base}/api/hilo/start", json={"uid": uid, "bet": 0.1}, timeout=5).json()
-                    if not h_st.get("ok"):
-                        h_st = sess.get(f"{self.web_base}/api/hilo/state?uid={uid}", timeout=5).json()
-                    if h_st.get("active"):
-                        mults = h_st.get("choiceMultipliers", {})
-                        choice = "higher" if (mults.get("higher") or 999) <= (mults.get("lower") or 999) else "lower"
-                        g = sess.post(f"{self.web_base}/api/hilo/guess", json={"uid": uid, "choice": choice}, timeout=5).json()
-                        if g.get("ok") and g.get("canCashout"):
-                            co = sess.post(f"{self.web_base}/api/hilo/cashout", json={"uid": uid}, timeout=5).json()
-                            bal = co.get("balance", bal)
-                        else:
-                            bal = g.get("balance", bal)
-                except Exception:
-                    pass
-                await asyncio.sleep(0.5)
+                    if game_type == "mines":
+                        m_st = sess.post(f"{self.web_base}/api/mines/start", json={
+                            "uid": uid, "bet": bet, "minesCount": random.choice([2, 3])
+                        }, timeout=5).json()
+                        if m_st.get("ok"):
+                            rnd_cell = random.randint(0, 24)
+                            rev = sess.post(f"{self.web_base}/api/mines/reveal", json={"uid": uid, "cellIndex": rnd_cell}, timeout=5).json()
+                            if rev.get("ok") and rev.get("canCashout"):
+                                co = sess.post(f"{self.web_base}/api/mines/cashout", json={"uid": uid}, timeout=5).json()
+                                bal = co.get("balance", bal)
+                            else:
+                                bal = rev.get("balance", bal)
+                    else:
+                        h_st = sess.post(f"{self.web_base}/api/hilo/start", json={"uid": uid, "bet": bet}, timeout=5).json()
+                        if not h_st.get("ok"):
+                            h_st = sess.get(f"{self.web_base}/api/hilo/state?uid={uid}", timeout=5).json()
+                        if h_st.get("active"):
+                            mults = h_st.get("choiceMultipliers", {})
+                            choice = "higher" if (mults.get("higher") or 999) <= (mults.get("lower") or 999) else "lower"
+                            g = sess.post(f"{self.web_base}/api/hilo/guess", json={"uid": uid, "choice": choice}, timeout=5).json()
+                            if g.get("ok") and g.get("canCashout"):
+                                co = sess.post(f"{self.web_base}/api/hilo/cashout", json={"uid": uid}, timeout=5).json()
+                                bal = co.get("balance", bal)
+                            else:
+                                bal = g.get("balance", bal)
+                except Exception as e:
+                    logger.debug(f"Wager round {rounds} error: {e}")
+
+                await asyncio.sleep(random.uniform(3.0, 7.0))
                 w_info = sess.get(f"{self.web_base}/api/withdraw/info?uid={uid}", timeout=10).json()
 
             res["balance"] = bal
 
-            # 7. Submit Withdrawal to xRocket
+            # 7. Submit Withdrawal to xRocket (Leaving a small tail to look like active player)
             if bal >= 0.1:
+                if bal >= 0.45:
+                    tail = round(random.uniform(0.10, 0.18), 2)
+                    withdraw_amt = round(bal - tail, 2)
+                else:
+                    withdraw_amt = bal
+
                 t_res = int(time.time() * 1000)
                 req_id = hex(t_res)[2:] + ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
                 quote = sess.post(f"{self.web_base}/api/withdraw/quote", json={
-                    "uid": uid, "amount": bal, "method": "xrocket", "coin": "USDT", "currency": "USD", "reqId": req_id
+                    "uid": uid, "amount": withdraw_amt, "method": "xrocket", "coin": "USDT", "currency": "USD", "reqId": req_id
                 }, timeout=10).json()
 
                 if quote.get("pending") and quote.get("job"):
@@ -490,6 +513,12 @@ async def check_pending_withdrawals_and_collect(state: dict):
                         found_cheque = urls[0]
                         break
 
+            rejected = False
+            for msg in hist.messages:
+                if msg.message and ("отклонен" in msg.message.lower() or "отклонена" in msg.message.lower()):
+                    rejected = True
+                    break
+
             if found_cheque:
                 log_event(state, f"🎉 Cheque captured for Request #{req_id}: {found_cheque}")
                 ok_claim = await activate_cheque_on_main(found_cheque)
@@ -504,6 +533,12 @@ async def check_pending_withdrawals_and_collect(state: dict):
                     })
                 else:
                     remaining.append(item)
+            elif rejected:
+                log_event(state, f"❌ Request #{req_id} was rejected by CasinoCG admin without refund. Moving account to LZT resale.")
+                state.setdefault("accounts_to_sell", []).append({
+                    "session_file": s_file,
+                    "account": item.get("account")
+                })
             else:
                 remaining.append(item)
         except Exception as e:
@@ -690,7 +725,7 @@ async def start_casinocg_flywheel_daemon():
                     if b.get("balance_id") == 21026:
                         buying_bal = float(b.get("convertedBalance") or 0.0)
                         break
-                if buying_bal >= 0.64:
+                if buying_bal >= 0.45:
                     log_event(state, f"No pending withdrawals and active buying balance (${buying_bal:.2f}). Starting cycle...")
                     await run_autonomous_cycle(state)
 
