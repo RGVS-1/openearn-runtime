@@ -566,3 +566,4 @@ def render_dashboard_html(stats: dict) -> str:
     </script>
 </body>
 </html>
+"""
