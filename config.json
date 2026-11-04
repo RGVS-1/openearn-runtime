@@ -14,5 +14,6 @@
     "delay_min": 12,
     "delay_max": 25,
     "batch_size": 5,
-    "batch_pause_sec": 45
+    "batch_pause_sec": 45,
+    "lzt_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzUxMiJ9.eyJzdWIiOjk1NjQ1OTEsImlzcyI6Imx6dCIsImlhdCI6MTc5MTg5MDg2MiwianRpIjoiMTAyNTEzMiIsInNjb3BlIjoiYmFzaWMgcmVhZCBwb3N0IGNvbnZlcnNhdGUgcGF5bWVudCBpbnZvaWNlIGNoYXRib3ggbWFya2V0IiwiZXhwIjoxOTQ5NTcwODYyfQ.OVTancTmwE_Gt28Ym5XorSde6lBwXID9GlyT4g7TA54NiTNRgW_an7CFINfS4PsHNHWeL8FkNIw2dgpoT_b96l9wcnwpRVvV6FetQFooOT-ZXR7eTUdStQ31WWeBcSARalPzlDbw-HoTLlh0k-uMVNFUOs1JtnfRtTm_WeQHivY"
 }

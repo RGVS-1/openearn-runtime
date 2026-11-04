@@ -20,6 +20,14 @@ def render_dashboard_html(stats: dict) -> str:
     promos_count = sniper.get("intercepted_promos_count", 0)
     recent_activations = sniper.get("recent_activations", [])
     
+    cg = stats.get("casinocg_flywheel", {})
+    cg_cycle = cg.get("cycle_count", 1)
+    cg_scale = cg.get("current_scale", 1)
+    cg_withdrawn = float(cg.get("total_withdrawn_usd", 0.98))
+    cg_cheques_count = cg.get("total_cheques_collected", 0)
+    cg_pending_count = len(cg.get("pending_withdrawals", []))
+    cg_sold_count = len(cg.get("sold_accounts", []))
+    
     # Format activation table rows
     rows_html = ""
     if not recent_activations:
@@ -342,6 +350,51 @@ def render_dashboard_html(stats: dict) -> str:
                         </div>
                         <span class="text-slate-500 font-mono">10M карта + дейлик + задания</span>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CasinoCG Autonomous Flywheel Section -->
+        <div class="glass-card rounded-2xl p-6 relative overflow-hidden">
+            <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-800">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                        <i class="fa-solid fa-arrows-spin text-lg animate-spin" style="animation-duration: 8s;"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-base font-bold text-white flex items-center gap-2">
+                            CasinoCG Autonomous Flywheel
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-400 border border-amber-500/30">Auto Scale: {cg_scale}x</span>
+                        </h2>
+                        <p class="text-xs text-slate-400">Покупка Premium на LZT → Прокрут $0.5-$1.0 → Вейджер Hi-Lo → xRocket Чеки на Xxxcalibur → Продажа ($0.60)</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                        <i class="fa-solid fa-circle-check mr-1"></i> Цикл #{cg_cycle}
+                    </span>
+                    <button onclick="fetch('/casinocg/trigger')" class="px-3 py-1 rounded-lg text-xs font-medium bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 transition">
+                        <i class="fa-solid fa-play mr-1"></i> Запустить круг
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+                <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800/80">
+                    <span class="text-slate-400 text-xs font-medium">Выведено USDT:</span>
+                    <div class="text-lg font-bold text-emerald-400 mt-1">${cg_withdrawn:.2f} USDT</div>
+                </div>
+                <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800/80">
+                    <span class="text-slate-400 text-xs font-medium">Чеков собрано на Xxxcalibur:</span>
+                    <div class="text-lg font-bold text-indigo-400 mt-1">{cg_cheques_count} шт.</div>
+                </div>
+                <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800/80">
+                    <span class="text-slate-400 text-xs font-medium">Активных заявок на вывод:</span>
+                    <div class="text-lg font-bold text-amber-400 mt-1">{cg_pending_count} заявки</div>
+                </div>
+                <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800/80">
+                    <span class="text-slate-400 text-xs font-medium">Продано аккаунтов на LZT:</span>
+                    <div class="text-lg font-bold text-cyan-400 mt-1">{cg_sold_count} акк. (325+ ₽ холд)</div>
                 </div>
             </div>
         </div>
