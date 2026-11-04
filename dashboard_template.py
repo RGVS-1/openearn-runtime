@@ -23,8 +23,9 @@ def render_dashboard_html(stats: dict) -> str:
     cg = stats.get("casinocg_flywheel", {})
     cg_cycle = cg.get("cycle_count", 1)
     cg_scale = cg.get("current_scale", 1)
-    cg_withdrawn = float(cg.get("total_withdrawn_usd", 0.98))
+    cg_withdrawn = float(cg.get("total_withdrawn_usd", 0.0))
     cg_cheques_count = cg.get("total_cheques_collected", 0)
+    cg_actual_withdrawn = cg_withdrawn if cg_cheques_count > 0 else 0.0
     cg_pending_count = len(cg.get("pending_withdrawals", []))
     cg_sold_count = len(cg.get("sold_accounts", []))
     
@@ -390,16 +391,16 @@ def render_dashboard_html(stats: dict) -> str:
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
                 <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800/80">
-                    <span class="text-slate-400 text-xs font-medium">Выведено USDT:</span>
-                    <div class="text-lg font-bold text-emerald-400 mt-1">${cg_withdrawn:.2f} USDT</div>
+                    <span class="text-slate-400 text-xs font-medium">Получено чеков на кошелек:</span>
+                    <div class="text-lg font-bold text-emerald-400 mt-1">${cg_actual_withdrawn:.2f} USDT <span class="text-xs text-slate-400">({cg_cheques_count} шт.)</span></div>
                 </div>
                 <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800/80">
-                    <span class="text-slate-400 text-xs font-medium">Чеков собрано на Xxxcalibur:</span>
-                    <div class="text-lg font-bold text-indigo-400 mt-1">{cg_cheques_count} шт.</div>
+                    <span class="text-slate-400 text-xs font-medium">Заявок на вывод (модерация):</span>
+                    <div class="text-lg font-bold text-amber-400 mt-1">{cg_pending_count} заявки <span class="text-xs text-amber-300">(${cg_withdrawn:.2f})</span></div>
                 </div>
                 <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800/80">
-                    <span class="text-slate-400 text-xs font-medium">Активных заявок на вывод:</span>
-                    <div class="text-lg font-bold text-amber-400 mt-1">{cg_pending_count} заявки</div>
+                    <span class="text-slate-400 text-xs font-medium">Статус модерации:</span>
+                    <div class="text-lg font-bold text-indigo-400 mt-1">Отклонено казино</div>
                 </div>
                 <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800/80">
                     <span class="text-slate-400 text-xs font-medium">Продано аккаунтов на LZT:</span>
