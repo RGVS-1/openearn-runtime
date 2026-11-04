@@ -278,7 +278,8 @@ async def run_jvault_single(acc_name, meta, cfg):
 async def run_jvault_all(limit=None):
     logger.info("=== Starting JVault Full Farm Cycle ===")
     cfg = json.load(open('config.json'))
-    db_accs = json.load(open(r'C:/Users/hoaki/Desktop/RB_Autimatic/accounts_db.json', encoding='utf-8'))
+    db_path = 'accounts_db.json' if os.path.exists('accounts_db.json') else r'C:/Users/hoaki/Desktop/RB_Autimatic/accounts_db.json'
+    db_accs = json.load(open(db_path, encoding='utf-8'))
     
     state = {}
     if os.path.exists(STATE_FILE):
@@ -365,7 +366,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     cfg = json.load(open('config.json'))
-    db_accs = json.load(open(r'C:/Users/hoaki/Desktop/RB_Autimatic/accounts_db.json', encoding='utf-8'))
+    db_path = 'accounts_db.json' if os.path.exists('accounts_db.json') else r'C:/Users/hoaki/Desktop/RB_Autimatic/accounts_db.json'
+    db_accs = json.load(open(db_path, encoding='utf-8'))
 
     if args.single:
         if args.single in db_accs:
