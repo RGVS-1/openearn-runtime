@@ -12,3 +12,4 @@ vault_key.txt
 *.log
 __pycache__/
 jvault_accounts_state.json
+ton_wallets.json

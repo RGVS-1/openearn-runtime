@@ -24,6 +24,41 @@ MASTER_REF = "8224259468"  # Xxxcalibur's referral code
 MASTER_WALLET = "UQCsilFQ1DZeU7WxQyHtZbXV1E_60Gq8sp7a8aI48yOVHGWq"
 STATE_FILE = "jvault_accounts_state.json"
 SUMMARY_FILE = "jvault_summary.json"
+WALLETS_FILE = "ton_wallets.json"
+
+def load_wallets():
+    if os.path.exists(WALLETS_FILE):
+        try:
+            with open(WALLETS_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {}
+
+def save_wallets(wallets):
+    try:
+        with open(WALLETS_FILE, 'w', encoding='utf-8') as f:
+            json.dump(wallets, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        logger.error(f"Failed to save wallets: {e}")
+
+def get_or_create_wallet_for_account(acc_name):
+    wallets = load_wallets()
+    master_key = '[RU] Xxxcalibur +79936124946 2025'
+    if acc_name == master_key:
+        return MASTER_WALLET
+    if acc_name in wallets and wallets[acc_name].get('address') != MASTER_WALLET:
+        return wallets[acc_name]['address']
+    
+    # Generate new unique wallet
+    from tonsdk.contract.wallet import Wallets, WalletVersionEnum
+    from tonsdk.crypto import mnemonic_new
+    mnemonics = mnemonic_new()
+    _, _, _, wallet = Wallets.create(version=WalletVersionEnum.v4r2, workchain=0, mnemonics=mnemonics)
+    addr = wallet.address.to_string(True, True, False)
+    wallets[acc_name] = {"address": addr, "mnemonics": mnemonics, "created_at": time.time()}
+    save_wallets(wallets)
+    return addr
 
 def get_proxy_dicts(meta):
     t_px = meta['proxy']['telethon']
@@ -119,21 +154,24 @@ async def run_jvault_single(acc_name, meta, cfg):
     if not user_id:
         return {"success": False, "error": sync_resp.get('error', 'Sync failed')}
 
-    # 2. Connect wallet if missing
+    # 2. Connect UNIQUE wallet for each account (not master)
+    master_key = '[RU] Xxxcalibur +79936124946 2025'
+    target_wallet = get_or_create_wallet_for_account(acc_name)
     ton_wallet = u.get('tonWallet')
-    if not ton_wallet:
+    
+    if not ton_wallet or (ton_wallet == MASTER_WALLET and acc_name != master_key):
         try:
             cw_res = requests.post('https://jvaultminer.world/api/user/connect-wallet', json={
-                "address": MASTER_WALLET,
+                "address": target_wallet,
                 "walletType": "tonconnect",
                 "initData": init_data
             }, headers=headers, proxies=proxies, timeout=10).json()
             if cw_res.get('success'):
-                ton_wallet = MASTER_WALLET
+                ton_wallet = target_wallet
                 u['isVerified'] = True
-                logger.info(f"[{acc_name}] Connected master wallet and verified!")
+                logger.info(f"[{acc_name}] Connected unique wallet {target_wallet[:12]}... and verified!")
         except Exception as e:
-            logger.warning(f"[{acc_name}] Connect wallet failed: {e}")
+            logger.warning(f"[{acc_name}] Connect unique wallet failed: {e}")
 
     # 3. Claim Passive Mining (every 6h)
     claimed_cycle = False
