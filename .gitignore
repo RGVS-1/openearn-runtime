@@ -11,3 +11,4 @@ vault_key.txt
 *.session-journal
 *.log
 __pycache__/
+jvault_accounts_state.json

@@ -28,6 +28,15 @@ def render_dashboard_html(stats: dict) -> str:
     cg_pending_count = len(cg.get("pending_withdrawals", []))
     cg_sold_count = len(cg.get("sold_accounts", []))
     
+    jv = stats.get("jvault_miner", {})
+    jv_accounts = jv.get("total_accounts", 110)
+    jv_assets = float(jv.get("total_assets_jvt", 0.0))
+    jv_holding = float(jv.get("total_holding_jvt", 0.0))
+    jv_usd = float(jv.get("total_usd_value", jv_assets * 0.0252))
+    jv_master = float(jv.get("master_assets", 98.53))
+    jv_master_pct = min(100.0, round((jv_master / 250.0) * 100, 1))
+    jv_status = jv.get("status", "ACTIVE")
+    
     # Format activation table rows
     rows_html = ""
     if not recent_activations:
@@ -395,6 +404,54 @@ def render_dashboard_html(stats: dict) -> str:
                 <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800/80">
                     <span class="text-slate-400 text-xs font-medium">Продано аккаунтов на LZT:</span>
                     <div class="text-lg font-bold text-cyan-400 mt-1">{cg_sold_count} акк. (325+ ₽ холд)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- JVault Miner Bot Automation Section -->
+        <div class="glass-card rounded-2xl p-6 relative overflow-hidden">
+            <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-800">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+                        <i class="fa-solid fa-gem text-lg animate-pulse"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-base font-bold text-white flex items-center gap-2">
+                            JVault Miner Automation (JVT / TON)
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">{jv_accounts} Аккаунтов</span>
+                        </h2>
+                        <p class="text-xs text-slate-400">10 Ads/день (+50 JVT/акк) + Цикл майнинга (6h) + Рефка Xxxcalibur (5% + 25 JVT) → Авто-вывод от 250 JVT</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                        <i class="fa-solid fa-circle-check mr-1"></i> {jv_status}
+                    </span>
+                    <button onclick="fetch('/jvault/trigger')" class="px-3 py-1 rounded-lg text-xs font-medium bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 transition">
+                        <i class="fa-solid fa-bolt mr-1"></i> Запустить фарм рекламы
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+                <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800/80">
+                    <span class="text-slate-400 text-xs font-medium">Баланс фермы (JVT):</span>
+                    <div class="text-lg font-bold text-cyan-400 mt-1">{jv_assets:.2f} JVT <span class="text-xs font-normal text-slate-400">(${jv_usd:.2f})</span></div>
+                </div>
+                <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800/80">
+                    <span class="text-slate-400 text-xs font-medium">В холдинге (разблок 5%/день):</span>
+                    <div class="text-lg font-bold text-purple-400 mt-1">{jv_holding:.2f} JVT</div>
+                </div>
+                <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800/80">
+                    <span class="text-slate-400 text-xs font-medium">Мастер (Xxxcalibur):</span>
+                    <div class="text-lg font-bold text-emerald-400 mt-1">{jv_master:.2f} / 250 JVT <span class="text-xs text-emerald-300 font-semibold">({jv_master_pct}%)</span></div>
+                    <div class="w-full bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                        <div class="bg-emerald-400 h-full rounded-full transition-all" style="width: {jv_master_pct}%;"></div>
+                    </div>
+                </div>
+                <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800/80">
+                    <span class="text-slate-400 text-xs font-medium">Потенциал фермы / день:</span>
+                    <div class="text-lg font-bold text-amber-400 mt-1">+5,500 JVT <span class="text-xs font-normal text-amber-300">(~$138/день)</span></div>
                 </div>
             </div>
         </div>

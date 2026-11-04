@@ -884,8 +884,16 @@ async def handle_index(request):
             "recent_promos": INTERCEPTED_PROMOS[-15:],
             "recent_activations": ACTIVATION_HISTORY[-15:]
         },
-        "casinocg_flywheel": {}
+        "casinocg_flywheel": {},
+        "jvault_miner": {}
     }
+
+    if os.path.exists("jvault_summary.json"):
+        try:
+            with open("jvault_summary.json", "r", encoding="utf-8") as f_jv:
+                stats_data["jvault_miner"] = json.load(f_jv)
+        except Exception:
+            pass
 
     if os.path.exists("casinocg_state.json"):
         try:
@@ -954,6 +962,17 @@ async def handle_manual_cg_cycle(request):
     asyncio.create_task(run_autonomous_cycle(state))
     return web.json_response({"ok": True, "message": "CasinoCG autonomous cycle started!"})
 
+async def handle_jvault_status(request):
+    from jvault_runner import load_summary
+    import aiohttp.web as web
+    return web.json_response(load_summary())
+
+async def handle_manual_jvault_cycle(request):
+    from jvault_runner import run_jvault_all
+    import aiohttp.web as web
+    asyncio.create_task(run_jvault_all())
+    return web.json_response({"ok": True, "message": "JVault miner farm cycle started in background!"})
+
 def create_app():
     app = web.Application()
     app.router.add_get("/", handle_index)
@@ -964,6 +983,8 @@ def create_app():
     app.router.add_get("/debug", handle_debug)
     app.router.add_get("/api/casinocg", handle_casinocg_status)
     app.router.add_get("/casinocg/trigger", handle_manual_cg_cycle)
+    app.router.add_get("/api/jvault", handle_jvault_status)
+    app.router.add_get("/jvault/trigger", handle_manual_jvault_cycle)
     return app
 
 async def main():
@@ -981,9 +1002,11 @@ async def main():
     t4 = asyncio.create_task(run_pixelmania_daily_schedule())
     from casinocg_flywheel import start_casinocg_flywheel_daemon
     t5 = asyncio.create_task(start_casinocg_flywheel_daemon())
+    from jvault_runner import start_jvault_daemon
+    t6 = asyncio.create_task(start_jvault_daemon())
 
     try:
-        await asyncio.gather(t1, t2, t3, t4, t5)
+        await asyncio.gather(t1, t2, t3, t4, t5, t6)
     except asyncio.CancelledError:
         pass
     finally:
