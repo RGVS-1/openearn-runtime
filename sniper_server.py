@@ -1015,7 +1015,7 @@ async def main():
     t6 = asyncio.create_task(start_jvault_daemon())
 
     try:
-        await asyncio.gather(t1, t2, t3, t4, t5, t6)
+        await asyncio.gather(t1, t2, t3, t4, t6)
     except asyncio.CancelledError:
         pass
     finally:
