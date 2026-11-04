@@ -1,4 +1,4 @@
-# HTML Dashboard Template for TheOpenEarn + Pixelmania & Promo Sniper & CasinoCG & JVault
+# HTML Dashboard Template for TheOpenEarn + Pixelmania & Promo Sniper & JVault
 
 def render_dashboard_html(stats: dict) -> str:
     openearn = stats.get("openearn_stats", {})
@@ -20,43 +20,6 @@ def render_dashboard_html(stats: dict) -> str:
     promos_count = sniper.get("intercepted_promos_count", 0)
     recent_activations = sniper.get("recent_activations", [])
     
-    cg = stats.get("casinocg_flywheel", {})
-    cg_cycle = cg.get("cycle_count", 2)
-    cg_scale = cg.get("current_scale", 1)
-    cg_withdrawn = float(cg.get("total_withdrawn_usd", 0.0))
-    cg_cheques_count = cg.get("total_cheques_collected", 0)
-    cg_actual_withdrawn = cg_withdrawn if cg_cheques_count > 0 else 0.0
-    pending_list = cg.get("pending_withdrawals", [])
-    cg_pending_count = len(pending_list)
-    cg_sold_count = len(cg.get("sold_accounts", []))
-    
-    # Format withdrawal items
-    withdrawals_html = ""
-    if not pending_list:
-        withdrawals_html = '<tr><td colspan="5" class="py-3 px-4 text-center text-slate-500 italic">Нет активных заявок</td></tr>'
-    else:
-        for pw in pending_list:
-            rid = pw.get("request_id")
-            amt = float(pw.get("amount", 0.0))
-            phone = pw.get("phone", "-")
-            status = pw.get("status", "pending")
-            time_created = pw.get("created_at", "-")
-            if rid in [376, 377]:
-                badge = '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/30"><i class="fa-solid fa-xmark mr-1"></i>Отклонено (твинк/мульт)</span>'
-            elif status == "pending":
-                badge = '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30"><i class="fa-solid fa-clock mr-1"></i>На модерации (xRocket)</span>'
-            else:
-                badge = f'<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">{status}</span>'
-            
-            withdrawals_html += f"""
-            <tr class="border-b border-slate-800/60 hover:bg-slate-800/20 transition-colors">
-                <td class="py-2.5 px-4 font-mono text-xs text-amber-300 font-bold">#{rid}</td>
-                <td class="py-2.5 px-4 font-mono text-xs text-slate-300">{phone}</td>
-                <td class="py-2.5 px-4 font-bold text-xs text-emerald-400">${amt:.2f} USDT</td>
-                <td class="py-2.5 px-4 text-xs text-slate-400"><span class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded text-xs font-semibold">xRocket</span></td>
-                <td class="py-2.5 px-4">{badge}</td>
-            </tr>
-            """
 
     jv = stats.get("jvault_miner", {})
     jv_accounts = jv.get("total_accounts", 110)

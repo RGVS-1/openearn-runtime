@@ -893,7 +893,6 @@ async def handle_index(request):
             "recent_promos": INTERCEPTED_PROMOS[-15:],
             "recent_activations": ACTIVATION_HISTORY[-15:]
         },
-        "casinocg_flywheel": {},
         "jvault_miner": {}
     }
 
@@ -904,12 +903,6 @@ async def handle_index(request):
         except Exception:
             pass
 
-    if os.path.exists("casinocg_state.json"):
-        try:
-            with open("casinocg_state.json", "r", encoding="utf-8") as f_cg:
-                stats_data["casinocg_flywheel"] = json.load(f_cg)
-        except Exception:
-            pass
 
     accept = request.headers.get("Accept", "")
     if request.query.get("format") == "json" or ("application/json" in accept and "text/html" not in accept):
@@ -959,18 +952,6 @@ async def handle_logs(request):
     content = "".join(log_lines[-120:]) if log_lines else "Логи инициализируются на сервере..."
     return web.Response(text=content, content_type="text/plain", charset="utf-8")
 
-async def handle_casinocg_status(request):
-    from casinocg_flywheel import load_flywheel_state
-    import aiohttp.web as web
-    return web.json_response(load_flywheel_state())
-
-async def handle_manual_cg_cycle(request):
-    from casinocg_flywheel import load_flywheel_state, run_autonomous_cycle
-    import aiohttp.web as web
-    state = load_flywheel_state()
-    asyncio.create_task(run_autonomous_cycle(state))
-    return web.json_response({"ok": True, "message": "CasinoCG autonomous cycle started!"})
-
 async def handle_jvault_status(request):
     from jvault_runner import load_summary
     import aiohttp.web as web
@@ -990,8 +971,6 @@ def create_app():
     app.router.add_get("/pixelmania/run", handle_manual_pixelmania)
     app.router.add_get("/logs", handle_logs)
     app.router.add_get("/debug", handle_debug)
-    app.router.add_get("/api/casinocg", handle_casinocg_status)
-    app.router.add_get("/casinocg/trigger", handle_manual_cg_cycle)
     app.router.add_get("/api/jvault", handle_jvault_status)
     app.router.add_get("/jvault/trigger", handle_manual_jvault_cycle)
     return app
@@ -1009,8 +988,6 @@ async def main():
     t2 = asyncio.create_task(run_tapper_loop())
     t3 = asyncio.create_task(run_daily_harvest_schedule())
     t4 = asyncio.create_task(run_pixelmania_daily_schedule())
-    from casinocg_flywheel import start_casinocg_flywheel_daemon
-    # t5 = asyncio.create_task(start_casinocg_flywheel_daemon()) # Disabled on Cloud (runs locally)
     from jvault_runner import start_jvault_daemon
     t6 = asyncio.create_task(start_jvault_daemon())
 
