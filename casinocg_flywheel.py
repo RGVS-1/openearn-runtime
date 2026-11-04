@@ -265,9 +265,9 @@ class CasinoCGWorker:
             await client.send_message(bot, "/start")
             await asyncio.sleep(2.0)
 
-            # 3. Join required channels & solve captcha
-            hist = await client(GetHistoryRequest(peer=bot, offset_id=0, offset_date=None, add_offset=0, limit=10, max_id=0, min_id=0, hash=0))
-            for msg in hist.messages:
+            # 3. Join required channels
+            history = await client(GetHistoryRequest(peer=bot, offset_id=0, offset_date=None, add_offset=0, limit=10, max_id=0, min_id=0, hash=0))
+            for msg in history.messages:
                 if msg.reply_markup and hasattr(msg.reply_markup, 'rows'):
                     for row in msg.reply_markup.rows:
                         for btn in row.buttons:
@@ -278,25 +278,37 @@ class CasinoCGWorker:
                                         await client(JoinChannelRequest(ch_ent))
                                     except Exception:
                                         pass
+                                await asyncio.sleep(1.5)
                                 try:
                                     await client(GetBotCallbackAnswerRequest(peer=bot, msg_id=msg.id, data=b'check_subscription'))
                                 except Exception:
                                     pass
-                            elif getattr(btn, 'data', None) == b'captcha_reveal':
+                                await asyncio.sleep(2.0)
+                                break
+
+            # 4. Check captcha reveal button & dice
+            history = await client(GetHistoryRequest(peer=bot, offset_id=0, offset_date=None, add_offset=0, limit=10, max_id=0, min_id=0, hash=0))
+            for msg in history.messages:
+                if msg.reply_markup and hasattr(msg.reply_markup, 'rows'):
+                    for row in msg.reply_markup.rows:
+                        for btn in row.buttons:
+                            if getattr(btn, 'data', None) == b'captcha_reveal':
                                 try:
                                     await client(GetBotCallbackAnswerRequest(peer=bot, msg_id=msg.id, data=b'captcha_reveal'))
                                 except Exception:
                                     pass
+                                await asyncio.sleep(2.5)
+                                break
 
-            await asyncio.sleep(2.0)
-            hist = await client(GetHistoryRequest(peer=bot, offset_id=0, offset_date=None, add_offset=0, limit=10, max_id=0, min_id=0, hash=0))
+            # Find slot dice message
+            history = await client(GetHistoryRequest(peer=bot, offset_id=0, offset_date=None, add_offset=0, limit=10, max_id=0, min_id=0, hash=0))
             dice_val = 0
-            for msg in hist.messages:
+            for msg in history.messages:
                 if msg.media and hasattr(msg.media, 'value') and getattr(msg.media, 'emoticon', None) == '🎰':
                     dice_val = msg.media.value
                     break
 
-            # 4. Auth in WebApp
+            # 5. Open WebApp & Auth
             res_wv = await client(RequestMainWebViewRequest(peer=bot, bot=bot, start_param='webapp', platform='android'))
             hash_part = res_wv.url.split('#')[1]
             m = re.search(r'tgWebAppData=([^&]+)', hash_part)
@@ -313,24 +325,31 @@ class CasinoCGWorker:
 
             uid = auth_r.json().get("uid")
 
-            # Solve slot captcha if required
+            # 6. Solve slot captcha using correct Russian symbol names
             cap_status = sess.get(f"{self.web_base}/api/captcha/status", timeout=10).json()
             if cap_status.get("required") and dice_val > 0:
-                symbols = ["🍒", "🍋", "🍇", "7️⃣"]
+                slot_symbols = ["Бар", "Виноград", "Лимон", "Семёрка"]
                 val = max(1, min(64, dice_val)) - 1
                 r1, r2, r3 = val % 4, (val // 4) % 4, (val // 16) % 4
-                combo = [symbols[r1], symbols[r2], symbols[r3]]
-                c_sol = sess.post(f"{self.web_base}/api/captcha/solve", json={"combination": combo}, timeout=10).json()
-                if not c_sol.get("correct"):
-                    combo_rev = [symbols[r3], symbols[r2], symbols[r1]]
-                    sess.post(f"{self.web_base}/api/captcha/solve", json={"combination": combo_rev}, timeout=10)
-                await asyncio.sleep(3.0)
-                # re-auth
-                res_wv2 = await client(RequestMainWebViewRequest(peer=bot, bot=bot, start_param='webapp', platform='android'))
-                init_data2 = urllib.parse.unquote(re.search(r'tgWebAppData=([^&]+)', res_wv2.url.split('#')[1]).group(1))
-                sess.post(f"{self.web_base}/api/auth/telegram", json={"initData": init_data2, "did": "", "hw": "fp_mobile_android"}, timeout=10)
+                order1 = [slot_symbols[r1], slot_symbols[r2], slot_symbols[r3]]
+                order2 = [slot_symbols[r3], slot_symbols[r2], slot_symbols[r1]]
 
-            # 5. Check & Spin Wheel
+                sol = sess.post(f"{self.web_base}/api/captcha/solve", json={"uid": uid, "reels": order1, "token": None}, timeout=10).json()
+                if not sol.get("correct") and not sol.get("alreadyPassed"):
+                    sol = sess.post(f"{self.web_base}/api/captcha/solve", json={"uid": uid, "reels": order2, "token": None}, timeout=10).json()
+
+                if sol.get("correct") or sol.get("alreadyPassed"):
+                    await asyncio.sleep(4.0)
+                    res_wv2 = await client(RequestMainWebViewRequest(peer=bot, bot=bot, start_param='webapp', platform='android'))
+                    hash_part2 = res_wv2.url.split('#')[1]
+                    m2 = re.search(r'tgWebAppData=([^&]+)', hash_part2)
+                    if m2:
+                        init_data2 = urllib.parse.unquote(m2.group(1))
+                        auth_r2 = sess.post(f"{self.web_base}/api/auth/telegram", json={"initData": init_data2, "did": "", "hw": "fp_mobile_android"}, timeout=10)
+                        if auth_r2.status_code == 200:
+                            uid = auth_r2.json().get("uid", uid)
+
+            # 7. Check & Spin Wheel
             sess.post(f"{self.web_base}/api/bonuses/wheel/check", json={"uid": uid}, timeout=10)
             w_spin = sess.post(f"{self.web_base}/api/bonuses/wheel/spin", json={"uid": uid}, timeout=10).json()
 

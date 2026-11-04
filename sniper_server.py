@@ -32,7 +32,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger("all_in_one_farm")
 
+_VAULT_EXTRACTED = False
+
 def ensure_vault_decrypted():
+    global _VAULT_EXTRACTED
+    if _VAULT_EXTRACTED:
+        return True
     vault_key = os.environ.get("VAULT_KEY")
     if vault_key and os.path.exists("vault.enc"):
         try:
@@ -47,11 +52,15 @@ def ensure_vault_decrypted():
             with zipfile.ZipFile(io.BytesIO(dec_bytes), "r") as zf:
                 zf.extractall(".")
             logger.info("🔓 Vault extracted successfully!")
+            _VAULT_EXTRACTED = True
             return True
         except Exception as e:
             logger.error(f"❌ Failed to decrypt vault: {e}")
             return False
-    return os.path.exists("accounts_db.json")
+    if os.path.exists("accounts_db.json"):
+        _VAULT_EXTRACTED = True
+        return True
+    return False
 
 ensure_vault_decrypted()
 
