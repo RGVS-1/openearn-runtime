@@ -127,12 +127,13 @@ class LZTClient:
                 u = r.json().get("user", {})
                 return {
                     "balance": float(u.get("balance", 0.0)),
+                    "convertedBalance": float(u.get("convertedBalance", 0.0)),
                     "hold": float(u.get("hold", 0.0)),
                     "balances": u.get("balances", [])
                 }
         except Exception as e:
             logger.warning(f"LZT get_balances error: {e}")
-        return {"balance": 0.0, "hold": 0.0, "balances": []}
+        return {"balance": 0.0, "convertedBalance": 0.0, "hold": 0.0, "balances": []}
 
     def search_premium_accounts(self, max_price: float = 0.68, limit: int = 10) -> List[dict]:
         try:
@@ -155,7 +156,7 @@ class LZTClient:
             logger.warning(f"LZT search error: {e}")
         return []
 
-    def fast_buy(self, item_id: int, price: float, balance_id: Optional[int] = 21026) -> Tuple[bool, dict]:
+    def fast_buy(self, item_id: int, price: float, balance_id: Optional[int] = None) -> Tuple[bool, dict]:
         try:
             payload = {"price": price}
             if balance_id:
@@ -624,16 +625,17 @@ async def run_autonomous_cycle(state: dict):
     lzt = LZTClient(token=lzt_token)
 
     bals = lzt.get_balances()
-    buying_bal_usd = 0.0
+    converted_main = float(bals.get("convertedBalance", 0.0))
+    sub_bal = 0.0
     for b in bals.get("balances", []):
         if b.get("balance_id") == 21026:
-            buying_bal_usd = float(b.get("convertedBalance") or 0.0)
+            sub_bal = float(b.get("convertedBalance") or 0.0)
             break
 
-    # Also consider main balance + hold
+    buying_bal_usd = max(converted_main, sub_bal)
     main_bal = bals.get("balance", 0.0)
     hold_bal = bals.get("hold", 0.0)
-    log_event(state, f"LZT Balances: Buying Account Bal: ${buying_bal_usd:.2f} | Main: {main_bal:.2f} ₽ | Hold: {hold_bal:.2f} ₽")
+    log_event(state, f"LZT Balances: Available USD: ${buying_bal_usd:.2f} (Main: {main_bal:.2f} ₽ / Sub 21026: ${sub_bal:.2f}) | Hold: {hold_bal:.2f} ₽")
 
     # Adaptive scaling: 1 account if < $1.40, 2 if >= $1.40, 3 if >= $2.10
     batch_size = 1
@@ -659,7 +661,8 @@ async def run_autonomous_cycle(state: dict):
         title = it.get("title", "")
 
         log_event(state, f"Attempting purchase: #{item_id} (${price}) - {title[:45]}...")
-        ok_buy, item_data = lzt.fast_buy(item_id, price=price, balance_id=21026)
+        chosen_bal = 21026 if sub_bal >= price else None
+        ok_buy, item_data = lzt.fast_buy(item_id, price=price, balance_id=chosen_bal)
 
         if ok_buy:
             bought_count += 1
@@ -720,11 +723,13 @@ async def start_casinocg_flywheel_daemon():
             # 3. If no pending withdrawals and we have buying balance, auto-start cycle
             if not state.get("pending_withdrawals"):
                 bals = lzt.get_balances()
-                buying_bal = 0.0
+                converted_main = float(bals.get("convertedBalance", 0.0))
+                sub_bal = 0.0
                 for b in bals.get("balances", []):
                     if b.get("balance_id") == 21026:
-                        buying_bal = float(b.get("convertedBalance") or 0.0)
+                        sub_bal = float(b.get("convertedBalance") or 0.0)
                         break
+                buying_bal = max(converted_main, sub_bal)
                 if buying_bal >= 0.45:
                     log_event(state, f"No pending withdrawals and active buying balance (${buying_bal:.2f}). Starting cycle...")
                     await run_autonomous_cycle(state)
