@@ -194,7 +194,7 @@ def render_dashboard_html(stats: dict) -> str:
                         Cloud Farm & Sniper
                         <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">Render 24/7</span>
                     </h1>
-                    <p class="text-xs text-slate-400 font-medium mt-0.5">TheOpenEarn • Pixelmania • CasinoCG • JVault • @lh_promocodes</p>
+                    <p class="text-xs text-slate-400 font-medium mt-0.5">TheOpenEarn • Pixelmania • JVault Miner • @lh_promocodes</p>
                 </div>
             </div>
             
@@ -276,88 +276,6 @@ def render_dashboard_html(stats: dict) -> str:
                 <div class="mt-2 text-xs text-emerald-400 font-semibold flex items-center gap-1.5">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 pulse-dot"></span>
                     <span>MTProto + 3s Backup Poller</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- ============================================== -->
-        <!-- TOP PRIORITY SECTION: CasinoCG Flywheel Hub    -->
-        <!-- ============================================== -->
-        <div class="glass-card rounded-2xl p-6 relative overflow-hidden border border-amber-500/30 shadow-2xl">
-            <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-800">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
-                        <i class="fa-solid fa-arrows-spin text-lg animate-spin" style="animation-duration: 8s;"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-base font-bold text-white flex items-center gap-2">
-                            CasinoCG Autonomous Flywheel
-                            <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-400 border border-amber-500/30">Auto Scale: {cg_scale}x (8 акк. в круге)</span>
-                        </h2>
-                        <p class="text-xs text-slate-400">Покупка Premium на LZT (36-39 ₽) → Решение 🎰 капчи → Спин $0.5-$1.0 → Вейджер Hi-Lo → Заявки xRocket → Релистинг на LZT</p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-                        <i class="fa-solid fa-circle-check mr-1"></i> Цикл #{cg_cycle}
-                    </span>
-                    <button onclick="fetch('/casinocg/trigger')" class="px-3 py-1 rounded-lg text-xs font-medium bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 transition">
-                        <i class="fa-solid fa-play mr-1"></i> Запустить круг
-                    </button>
-                </div>
-            </div>
-
-            <!-- Stats 4-Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-                <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800/80">
-                    <span class="text-slate-400 text-xs font-medium">Отправлено на вывод:</span>
-                    <div class="text-lg font-bold text-emerald-400 mt-1">${cg_withdrawn:.2f} USDT <span class="text-xs text-slate-400">({cg_pending_count} заявок)</span></div>
-                </div>
-                <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800/80">
-                    <span class="text-slate-400 text-xs font-medium">Куплено в этом круге:</span>
-                    <div class="text-lg font-bold text-amber-400 mt-1">8 аккаунтов <span class="text-xs text-amber-300">(Канада +1)</span></div>
-                </div>
-                <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800/80">
-                    <span class="text-slate-400 text-xs font-medium">Получено чеков на Xxxcalibur:</span>
-                    <div class="text-lg font-bold text-indigo-400 mt-1">${cg_actual_withdrawn:.2f} USDT <span class="text-xs text-slate-400">({cg_cheques_count} шт.)</span></div>
-                </div>
-                <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800/80">
-                    <span class="text-slate-400 text-xs font-medium">Продано на LZT:</span>
-                    <div class="text-lg font-bold text-cyan-400 mt-1">{cg_sold_count} акк. (232.80 ₽ холд снят)</div>
-                </div>
-            </div>
-
-            <!-- Live Withdrawal Requests Table -->
-            <div class="mt-5">
-                <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-800">
-                    <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                        <i class="fa-solid fa-money-bill-transfer text-emerald-400"></i> Журнал созданных заявок на вывод
-                    </h3>
-                    <span class="text-xs text-slate-500 font-mono">Обновление статусов xRocket</span>
-                </div>
-                <div class="overflow-x-auto rounded-xl border border-slate-800/80 bg-slate-950/40">
-                    <table class="w-full text-left text-xs text-slate-300">
-                        <thead class="uppercase bg-slate-900/80 text-slate-400 border-b border-slate-800 font-mono">
-                            <tr>
-                                <th class="py-2.5 px-4">Request ID</th>
-                                <th class="py-2.5 px-4">Аккаунт (Сессия)</th>
-                                <th class="py-2.5 px-4">Сумма (USDT)</th>
-                                <th class="py-2.5 px-4">Шлюз</th>
-                                <th class="py-2.5 px-4">Статус модерации</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {withdrawals_html}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Anticheat Feedback Box -->
-            <div class="mt-4 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-xs text-amber-200 leading-relaxed flex items-start gap-3">
-                <i class="fa-solid fa-triangle-exclamation text-amber-400 text-sm mt-0.5"></i>
-                <div>
-                    <strong class="font-bold text-amber-300">Анализ модерации казино:</strong> Заявки #376 и #377 отклонены антифродом казино с причиной <em>«твинк, мультиакинг»</em>. Причина: серийные заявки с одного IP (217.181.91.192), статический fingerprint и шаблон ставок. Для успешного обхода модерации подключаем уникальный User-Agent и прокси на каждый поток.
                 </div>
             </div>
         </div>

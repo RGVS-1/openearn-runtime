@@ -1010,7 +1010,7 @@ async def main():
     t3 = asyncio.create_task(run_daily_harvest_schedule())
     t4 = asyncio.create_task(run_pixelmania_daily_schedule())
     from casinocg_flywheel import start_casinocg_flywheel_daemon
-    t5 = asyncio.create_task(start_casinocg_flywheel_daemon())
+    # t5 = asyncio.create_task(start_casinocg_flywheel_daemon()) # Disabled on Cloud (runs locally)
     from jvault_runner import start_jvault_daemon
     t6 = asyncio.create_task(start_jvault_daemon())
 
