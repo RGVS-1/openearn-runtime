@@ -7,12 +7,12 @@ jobs:
   test_hub:
     runs-on: ubuntu-latest
     steps:
-      - name: Query Render Dashboard JSON
+      - name: Query Render Dashboard HTML
         run: |
-          echo "=== Testing Render Hub from Europe Runner ==="
-          curl -sS --retry 3 --retry-delay 5 -m 30 "https://openearn-sniper.onrender.com/?format=json" -o render_resp.json || true
-          if [ -s render_resp.json ]; then
-            cat render_resp.json | jq .
-          else
-            echo "Failed or empty response from Render"
-          fi
+          echo "=== Fetching Live HTML Dashboard ==="
+          curl -sS -m 25 "https://openearn-sniper.onrender.com/" -o dashboard.html
+          echo "HTML size: $(wc -c < dashboard.html) bytes"
+          grep -o "Время (МСК):.*" dashboard.html || true
+          grep -o "Статус и расписание всех модулей.*" dashboard.html || true
+          grep -o "CH-L3WLO53V" dashboard.html || true
+          grep -o "v_XQdbRHQUWdlI" dashboard.html || true
