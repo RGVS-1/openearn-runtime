@@ -299,256 +299,175 @@ TOTAL_FARM_STATS = {
 
 
 def parse_channel_post(raw_text: str, entities: list = None, reply_markup = None) -> list:
-
     targets = []
-
-    
-
-    # Extract URLs from entities, buttons, and regex
-
     all_urls = []
-
     extracted_codes = []
 
     if entities:
-
         for ent in entities:
-
-            if isinstance(ent, MessageEntityTextUrl):
-
-                all_urls.append(ent.url)
-
-            elif isinstance(ent, MessageEntityCode):
-
-                code_val = raw_text[ent.offset : ent.offset + ent.length].strip()
-
-                if code_val and len(code_val) >= 3:
-
+            ent_type = ent.get("_") if isinstance(ent, dict) else type(ent).__name__
+            if "TextUrl" in ent_type or (isinstance(ent, dict) and ent.get("url")):
+                u = ent.get("url") if isinstance(ent, dict) else getattr(ent, 'url', None)
+                if u:
+                    all_urls.append(u)
+            elif "Code" in ent_type:
+                off = ent.get("offset") if isinstance(ent, dict) else getattr(ent, 'offset', 0)
+                length = ent.get("length") if isinstance(ent, dict) else getattr(ent, 'length', 0)
+                code_val = raw_text[off : off + length].strip()
+                if code_val and len(code_val) >= 2:
                     extracted_codes.append(code_val)
 
-                    
-
     if reply_markup and hasattr(reply_markup, 'rows'):
-
         for row in reply_markup.rows:
-
             for btn in getattr(row, 'buttons', []):
-
                 btn_url = getattr(btn, 'url', None)
-
                 if btn_url:
-
                     all_urls.append(btn_url)
 
-
-
     plain_urls = re.findall(r'https?://[^\s\)\*]+', raw_text)
-
     all_urls.extend(plain_urls)
 
-    
-
     unique_urls = []
-
     for u in all_urls:
-
         if u not in unique_urls:
-
             unique_urls.append(u)
 
-            
-
-    # Check URL targets first
-
+    # 1. Check specific URLs
     for url in unique_urls:
-
         cd_m = re.search(r'cdgraderBot/cdgrader\?startapp=(v_[a-zA-Z0-9_\-]+)', url)
-
         if cd_m:
-
             targets.append({
-
                 'platform': 'cdgrader',
-
                 'bot': 'cdgraderBot',
-
                 'app_short_name': 'cdgrader',
-
                 'voucher': cd_m.group(1),
-
                 'url': url
-
             })
-
             continue
-
-
 
         pawn_m = re.search(r't\.me/pawn_bot(?:\/[a-zA-Z0-9_]+)?\?startapp=(promo_[a-zA-Z0-9_\-]+)', url, re.IGNORECASE)
-
         if pawn_m:
-
             targets.append({
-
                 'platform': 'pawn',
-
                 'bot': 'pawn_bot',
-
                 'link': pawn_m.group(1),
-
                 'url': url
-
             })
-
             continue
 
-
-
         gb_m = re.search(r't\.me/getbonus(?:_bot)?/[a-zA-Z0-9_]+\?startapp=([a-zA-Z0-9_\-]+)', url, re.IGNORECASE)
-
         if gb_m:
-
             param = gb_m.group(1)
-
             parts = dict(p.split('-', 1) for p in param.split('_') if '-' in p)
-
             c = parts.get('promocode')
-
             r = parts.get('ref', 'AHlEw3m2v8F24R5r')
-
             if c:
-
                 targets.append({
-
                     'platform': 'getbonus',
-
                     'bot': 'getbonus',
-
                     'code': c,
-
                     'ref': r,
-
                     'start_param': param,
-
                     'url': url
-
                 })
-
                 continue
 
+        sec_m = re.search(r't\.me/([a-zA-Z0-9_]+)(?:\?start=(check_[a-zA-Z0-9_\-]+))', url, re.IGNORECASE)
+        if sec_m:
+            b_name = sec_m.group(1)
+            ch_param = sec_m.group(2)
+            targets.append({
+                'platform': b_name.lower().replace('bot', ''),
+                'bot': b_name,
+                'check': ch_param,
+                'url': url
+            })
+            continue
 
-
-    # Strip markdown symbols for clean regex search
-
+    # 2. Extract promo codes from text
     clean_text = re.sub(r'[*_`]', '', raw_text)
-
-    
-
-    code_match = re.search(r'(?:Промокод|Код|Ваучер)\s*(?:в\s+[^\s:]+\s*)?[:\-—]\s*([A-Za-zА-Яа-я0-9_\-]{3,})', clean_text, re.IGNORECASE)
+    title_m = re.search(r'🚀\s*\[?([A-Za-z0-9_\-]+)\]?', clean_text)
+    detected_platform = title_m.group(1).lower() if title_m else None
 
     found_code = None
-
+    code_match = re.search(r'(?:Промокод|Код|Ваучер|Чек)\s*(?:в\s+[^\s:]+\s*)?[:\-—]\s*([A-Za-zА-Яа-я0-9_\-]{3,})', clean_text, re.IGNORECASE)
     if code_match:
-
         found_code = code_match.group(1).strip()
-
     elif extracted_codes:
-
         found_code = extracted_codes[0]
-
-        
+    else:
+        caps_match = re.search(r'(?:—|-|:)\s*([A-Za-z0-9_\-]{3,16})', clean_text)
+        if caps_match:
+            found_code = caps_match.group(1).strip()
 
     if found_code:
-
         full_content = (raw_text + ' ' + ' '.join(unique_urls)).lower()
-
         if 'skinset' in full_content or 'skinsetup_bot' in full_content:
-
             targets.append({
-
                 'platform': 'skinset',
-
                 'bot': 'skinsetup_bot',
-
                 'code': found_code
-
             })
-
         elif 'cdgrader' in full_content or 'catgrader' in full_content:
-
             if not any(t.get('platform') in ('cdgrader', 'cdgrader_promo') for t in targets):
-
                 targets.append({
-
                     'platform': 'cdgrader_promo',
-
                     'bot': 'cdgraderBot',
-
                     'code': found_code
-
                 })
-
         elif 'cardhouse' in full_content or 'thecardhouse_bot' in full_content:
-
             targets.append({
-
                 'platform': 'cardhouse',
-
                 'bot': 'TheCardHouse_bot',
-
                 'code': found_code
-
             })
-
         elif 'pawn' in full_content or 'pawn_bot' in full_content:
-
             if not any(t.get('platform') == 'pawn' for t in targets):
-
                 targets.append({
-
                     'platform': 'pawn',
-
                     'bot': 'pawn_bot',
-
                     'code': found_code
-
                 })
-
         elif 'getbonus' in full_content:
-
             if not any(t.get('platform') == 'getbonus' for t in targets):
-
                 targets.append({
-
                     'platform': 'getbonus',
-
                     'bot': 'getbonus',
-
                     'code': found_code,
-
                     'ref': 'AHlEw3m2v8F24R5r',
-
                     'start_param': f'promocode-{found_code}'
-
                 })
-
-        elif not targets:
-
+        elif 'mortis' in full_content:
             targets.append({
-
-                'platform': 'generic_promo',
-
+                'platform': 'mortis',
+                'bot': 'Mortis_game_bot',
+                'code': found_code
+            })
+        elif 'vault' in full_content:
+            targets.append({
+                'platform': 'vault',
+                'bot': 'vault542',
+                'code': found_code
+            })
+        elif not targets:
+            targets.append({
+                'platform': detected_platform or 'generic_promo',
+                'bot': unique_urls[0] if unique_urls else '@lh_promocodes',
                 'code': found_code,
-
-                'raw_text': raw_text[:150]
-
+                'raw_text': clean_text[:120]
             })
 
-
+    if not targets:
+        first_url = unique_urls[0] if unique_urls else "https://t.me/lh_promocodes"
+        targets.append({
+            'platform': detected_platform or 'channel_promo',
+            'bot': detected_platform or 'Telegram Bot',
+            'code': found_code or 'Бонус / Чек',
+            'url': first_url,
+            'raw_text': clean_text[:120]
+        })
 
     return targets
-
-
 
 async def get_telegram_webapp_init_data(acc_name: str, meta: dict, cfg: dict, bot_username: str, url: str = None, app_short_name: str = None, start_param: str = None, platform: str = 'android') -> tuple:
 
@@ -1404,128 +1323,66 @@ async def run_telegram_listener():
 
 
 
-            acc_name = "[BY] Snekis +375298497210 2025"
-
+            acc_name = "[RU] Xxxcalibur +79936124946 2025"
             meta = rb_accs.get(acc_name, {})
-
             src_sess = os.path.join(SESSIONS_DIR, f"{acc_name}.session")
-
             listener_sess = os.path.join(SESSIONS_DIR, "listener.session")
-
             if os.path.exists(src_sess):
-
                 shutil.copy2(src_sess, listener_sess)
-
             sess_path = listener_sess
 
-
-
             client = TelegramClient(
-
                 sess_path,
-
                 cfg["api_id"],
-
                 cfg["api_hash"],
-
-                proxy=None, # Direct cloud connection from Frankfurt has 1ms ping & zero proxy 407 errors
-
+                proxy=None,
                 **meta.get("device", {})
-
             )
 
-
-
             await client.connect()
-
             logger.info("Realtime listener connected to Telegram MTProto!")
-
             channel = await client.get_entity("lh_promocodes")
 
-            
-
-            # Ensure subscribed to channel for instant MTProto push delivery
-
             try:
-
                 from telethon.tl.functions.channels import JoinChannelRequest
-
                 await client(JoinChannelRequest(channel))
-
                 logger.info("Subscribed to @lh_promocodes for realtime updates!")
-
             except Exception as e:
-
                 logger.info(f"Subscription status: {e}")
 
-
-
             def process_message(msg):
-
                 if msg.id in PROCESSED_MESSAGE_IDS:
-
                     return
-
                 PROCESSED_MESSAGE_IDS.add(msg.id)
-
                 raw_text = msg.raw_text or msg.message or msg.text or ""
-
-                logger.info(f"🚨 New promo in @lh_promocodes (ID: {msg.id}): {raw_text[:100]}...")
-
-                targets = parse_channel_post(raw_text, msg.entities, getattr(msg, 'reply_markup', None))
-
+                logger.info(f"⚡ New promo in @lh_promocodes (ID: {msg.id}): {raw_text[:100]}...")
+                targets = parse_channel_post(raw_text, getattr(msg, "entities", None), getattr(msg, "reply_markup", None))
                 if targets:
+                    msg_dt = msg.date if hasattr(msg, "date") and msg.date else datetime.now(timezone.utc)
+                    if not msg_dt.tzinfo:
+                        msg_dt = msg_dt.replace(tzinfo=timezone.utc)
+                    date_msk_str = msg_dt.astimezone(MSK).strftime("%d.%m.%Y %H:%M:%S (МСК)")
 
                     INTERCEPTED_PROMOS.append({
-
                         "id": msg.id,
-
-                        "date": datetime.now(timezone.utc).isoformat(),
-
+                        "date": msg_dt.isoformat(),
+                        "date_msk": date_msk_str,
                         "targets": targets,
-
-                        "text_preview": raw_text[:120]
-
+                        "text_preview": re.sub(r"[*_`]", "", raw_text)[:120]
                     })
-
+                    save_promos_history()
                     asyncio.create_task(dispatch_promo_targets(targets))
 
-
-
             @client.on(events.NewMessage(chats=channel))
-
             async def on_new_promo(event):
-
                 process_message(event.message)
 
-
-
-            # Check recent messages on startup so no post during restart/deploy is missed
-
             try:
-
-                init_msgs = await client.get_messages(channel, limit=10)
-
-                now_utc = datetime.now(timezone.utc)
-
+                init_msgs = await client.get_messages(channel, limit=30)
                 for m in reversed(init_msgs):
-
-                    m_date = m.date if m.date.tzinfo else m.date.replace(tzinfo=timezone.utc)
-
-                    age_sec = (now_utc - m_date).total_seconds()
-
-                    # Catch any recent promo posted within the last hour
-
-                    if age_sec < 3600 and m.id not in PROCESSED_MESSAGE_IDS:
-
-                        logger.info(f"⚡ Startup catch-up: Processing recent post #{m.id} ({age_sec:.0f}s old)...")
-
+                    if m.id not in PROCESSED_MESSAGE_IDS:
+                        logger.info(f"⚡ Startup catch-up: Processing post #{m.id}...")
                         process_message(m)
-
-                    else:
-
-                        PROCESSED_MESSAGE_IDS.add(m.id)
-
                 logger.info(f"Initialized listener with {len(PROCESSED_MESSAGE_IDS)} messages.")
 
             except Exception as e:
@@ -1934,7 +1791,7 @@ async def handle_logs(request):
 
                 with open(log_file, "r", encoding="utf-8", errors="replace") as f:
 
-                    lines = f.readlines()
+                    lines = [l for l in f.readlines() if "/health" not in l]
 
                     log_lines.extend(lines[-60:])
 

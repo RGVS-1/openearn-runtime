@@ -261,6 +261,18 @@ async def run_smart_chat_session(
 
     while current_count < target_paid:
         try:
+            # 0. Check connection and auto-reconnect if needed
+            if not client.is_connected():
+                logger.info(f"[{account_name}] Client disconnected, reconnecting to Telegram...")
+                try:
+                    await client.connect()
+                    logger.info(f"[{account_name}] Reconnected successfully!")
+                except Exception as rec_err:
+                    logger.warning(f"[{account_name}] Reconnection failed: {rec_err}")
+                    consecutive_errors += 1
+                    await asyncio.sleep(10)
+                    continue
+
             # 1. Fetch recent messages for ambient context safely
             recent_msgs = []
             try:
@@ -319,7 +331,12 @@ async def run_smart_chat_session(
         except Exception as e:
             consecutive_errors += 1
             logger.error(f"[{account_name}] Chat error: {type(e).__name__}: {e}")
-            if consecutive_errors >= 4:
+            if not client.is_connected() or "disconnected" in str(e).lower():
+                try:
+                    await client.connect()
+                except Exception:
+                    pass
+            if consecutive_errors >= 8:
                 return {"ok": False, "error": f"Too many consecutive errors: {e}", "paid": current_count}
             await asyncio.sleep(12)
 

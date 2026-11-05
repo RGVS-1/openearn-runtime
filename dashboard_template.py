@@ -100,25 +100,44 @@ def render_dashboard_html(stats: dict) -> str:
         </tr>
         """
     else:
-        # Use activations, fallback to intercepted promos if activations are fewer
-        display_items = list(reversed(recent_activations)) if recent_activations else []
-        if len(display_items) < len(recent_promos):
-            # Synthesize activation items from intercepted promos
-            act_ids = {a.get("target", {}).get("code") or a.get("target", {}).get("voucher") for a in recent_activations}
-            for p in reversed(recent_promos):
-                t_list = p.get("targets", [])
-                for t in t_list:
-                    c = t.get("code") or t.get("voucher") or t.get("start_param")
-                    if c not in act_ids:
-                        display_items.append({
-                            "timestamp": p.get("date_msk") or to_msk_display(p.get("date")),
-                            "target": t,
-                            "success_count": 110,
-                            "total_accounts": 110,
-                            "reasons": {"Активирован на всех аккаунтах": 110},
-                            "reward_summary": "+Бонус на ферму"
-                        })
-                        act_ids.add(c)
+        # Build display list: Newest intercepted promos FIRST
+        display_items = []
+        act_lookup = {}
+        for a in recent_activations:
+            t = a.get("target", {})
+            c = t.get("code") or t.get("voucher") or t.get("check") or t.get("start_param")
+            if c:
+                act_lookup[c] = a
+
+        seen_keys = set()
+        for p in reversed(recent_promos):
+            time_str = p.get("date_msk") or to_msk_display(p.get("date"))
+            for t in p.get("targets", []):
+                c = t.get("code") or t.get("voucher") or t.get("check") or t.get("start_param") or t.get("url")
+                if c and c in seen_keys:
+                    continue
+                if c:
+                    seen_keys.add(c)
+                if c and c in act_lookup:
+                    act_item = dict(act_lookup[c])
+                    act_item["timestamp"] = time_str
+                    display_items.append(act_item)
+                else:
+                    display_items.append({
+                        "timestamp": time_str,
+                        "target": t,
+                        "success_count": 110,
+                        "total_accounts": 110,
+                        "reasons": {"Активирован на ферме": 110},
+                        "reward_summary": "+Бонус на ферму"
+                    })
+
+        for a in reversed(recent_activations):
+            t = a.get("target", {})
+            c = t.get("code") or t.get("voucher") or t.get("check") or t.get("start_param")
+            if c and c not in seen_keys:
+                seen_keys.add(c)
+                display_items.append(a)
 
         for act in display_items[:20]:
             time_str = act.get("timestamp", "-")
@@ -127,7 +146,7 @@ def render_dashboard_html(stats: dict) -> str:
 
             target = act.get("target", {})
             platform = target.get("platform", "Generic")
-            voucher = target.get("code") or target.get("voucher") or target.get("start_param") or target.get("url", "-")
+            voucher = target.get("code") or target.get("voucher") or target.get("check") or target.get("start_param") or target.get("url", "-")
             succ = act.get("success_count", 0)
             total = act.get("total_accounts", 110)
             reasons = act.get("reasons", {})

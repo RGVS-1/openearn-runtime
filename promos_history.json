@@ -277,6 +277,112 @@
         }
       ],
       "text_preview": "🚀 CDGRADER  Чек — активировать  😎 @lh_promocodes"
+    },
+    {
+      "id": 335,
+      "date": "2026-11-05T10:34:01+00:00",
+      "date_msk": "05.11.2026 13:34:01 (МСК)",
+      "targets": [
+        {
+          "platform": "cdgrader_promo",
+          "bot": "cdgraderBot",
+          "code": "FREE"
+        }
+      ],
+      "text_preview": "🚀 [CDGRADER](https://t.me/cdgraderBot/cdgrader?startapp=7556464696)\n\nПромокод — FREE\n\n😎 @lhpromocodes"
+    },
+    {
+      "id": 336,
+      "date": "2026-11-05T10:40:54+00:00",
+      "date_msk": "05.11.2026 13:40:54 (МСК)",
+      "targets": [
+        {
+          "platform": "skinset",
+          "bot": "skinsetup_bot",
+          "code": "LJGVRWUH"
+        }
+      ],
+      "text_preview": "🚀[SKINSET](https://t.me/skinsetupbot?start=ref7556464696)\n\nПромокод — LJGVRWUH\n\n😎 @lhpromocodes"
+    },
+    {
+      "id": 338,
+      "date": "2026-11-05T13:03:09+00:00",
+      "date_msk": "05.11.2026 16:03:09 (МСК)",
+      "targets": [
+        {
+          "platform": "secretlvl",
+          "bot": "secretlvlbot",
+          "check": "check_ed3112ed",
+          "url": "https://t.me/secretlvlbot?start=check_ed3112ed"
+        }
+      ],
+      "text_preview": "🚀[SECRETLVL](http://t.me/secretlvlbot)\n\nБесплатные запросы — [активировать](https://t.me/secretlvlbot?start=checked3112e"
+    },
+    {
+      "id": 339,
+      "date": "2026-11-05T13:47:00+00:00",
+      "date_msk": "05.11.2026 16:47:00 (МСК)",
+      "targets": [
+        {
+          "platform": "cardhouse",
+          "bot": "TheCardHouse_bot",
+          "code": "ORTHURRR"
+        }
+      ],
+      "text_preview": "🚀 [CARDHOUSE](https://t.me/TheCardHousebot?startapp=ref7556464696)\n\nПромокод — ORTHURRR\n\n😎 @lhpromocodes"
+    },
+    {
+      "id": 340,
+      "date": "2026-11-05T14:30:03+00:00",
+      "date_msk": "05.11.2026 17:30:03 (МСК)",
+      "targets": [
+        {
+          "platform": "mortis",
+          "bot": "Mortis_game_bot",
+          "code": "AHUY"
+        }
+      ],
+      "text_preview": "🚀 [MORTISGAME](https://t.me/Mortisgamebot?start=refDCCRPPVD)\n\nПромокод — AHUY\n\n😎 @lhpromocodes"
+    },
+    {
+      "id": 341,
+      "date": "2026-11-05T15:31:48+00:00",
+      "date_msk": "05.11.2026 18:31:48 (МСК)",
+      "targets": [
+        {
+          "platform": "vault",
+          "bot": "vault542",
+          "code": "L4MRTBGN"
+        }
+      ],
+      "text_preview": "🚀 [VAULT](https://vault542.live/daSus9)\n\nПромокод — L4MRTBGN\n\n😎 @lhpromocodes"
+    },
+    {
+      "id": 342,
+      "date": "2026-11-05T17:12:42+00:00",
+      "date_msk": "05.11.2026 20:12:42 (МСК)",
+      "targets": [
+        {
+          "platform": "skinset",
+          "bot": "skinsetup_bot",
+          "code": "HW4Z2R89"
+        }
+      ],
+      "text_preview": "🚀 [SKINSET](https://t.me/skinsetupbot?start=ref7556464696)\n\nПромокод — HW4Z2R89\n\n😎 @lhpromocodes"
+    },
+    {
+      "id": 343,
+      "date": "2026-11-05T17:14:36+00:00",
+      "date_msk": "05.11.2026 20:14:36 (МСК)",
+      "targets": [
+        {
+          "platform": "secretlvl",
+          "bot": "secretlvlbot",
+          "check": "check_7d8fcb30",
+          "url": "https://t.me/secretlvlbot?start=check_7d8fcb30"
+        }
+      ],
+      "text_preview": "🚀[SECRETLVL](http://t.me/secretlvlbot)\n\nБесплатные запросы — [активировать](https://t.me/secretlvlbot?start=check7d8fcb3"
     }
   ],
   "activations": [
@@ -577,6 +683,128 @@
         "Активировано на всей ферме": 110
       },
       "reward_summary": "+Бонус на аккаунты"
+    },
+    {
+      "timestamp": "05.11.2026 13:34:01 (МСК)",
+      "target": {
+        "platform": "cdgrader_promo",
+        "bot": "cdgraderBot",
+        "code": "FREE"
+      },
+      "success_count": 110,
+      "total_accounts": 110,
+      "reasons": {
+        "Активировано на всей ферме": 110
+      },
+      "reward_summary": "+Бонус на аккаунты",
+      "elapsed_sec": 0.45
+    },
+    {
+      "timestamp": "05.11.2026 13:40:54 (МСК)",
+      "target": {
+        "platform": "skinset",
+        "bot": "skinsetup_bot",
+        "code": "LJGVRWUH"
+      },
+      "success_count": 110,
+      "total_accounts": 110,
+      "reasons": {
+        "Активировано на всей ферме": 110
+      },
+      "reward_summary": "+Бонус на аккаунты",
+      "elapsed_sec": 0.45
+    },
+    {
+      "timestamp": "05.11.2026 16:03:09 (МСК)",
+      "target": {
+        "platform": "secretlvl",
+        "bot": "secretlvlbot",
+        "check": "check_ed3112ed",
+        "url": "https://t.me/secretlvlbot?start=check_ed3112ed"
+      },
+      "success_count": 110,
+      "total_accounts": 110,
+      "reasons": {
+        "Активировано на всей ферме": 110
+      },
+      "reward_summary": "+Бонус на аккаунты",
+      "elapsed_sec": 0.45
+    },
+    {
+      "timestamp": "05.11.2026 16:47:00 (МСК)",
+      "target": {
+        "platform": "cardhouse",
+        "bot": "TheCardHouse_bot",
+        "code": "ORTHURRR"
+      },
+      "success_count": 110,
+      "total_accounts": 110,
+      "reasons": {
+        "Активировано на всей ферме": 110
+      },
+      "reward_summary": "+Бонус на аккаунты",
+      "elapsed_sec": 0.45
+    },
+    {
+      "timestamp": "05.11.2026 17:30:03 (МСК)",
+      "target": {
+        "platform": "mortis",
+        "bot": "Mortis_game_bot",
+        "code": "AHUY"
+      },
+      "success_count": 110,
+      "total_accounts": 110,
+      "reasons": {
+        "Активировано на всей ферме": 110
+      },
+      "reward_summary": "+Бонус на аккаунты",
+      "elapsed_sec": 0.45
+    },
+    {
+      "timestamp": "05.11.2026 18:31:48 (МСК)",
+      "target": {
+        "platform": "vault",
+        "bot": "vault542",
+        "code": "L4MRTBGN"
+      },
+      "success_count": 110,
+      "total_accounts": 110,
+      "reasons": {
+        "Активировано на всей ферме": 110
+      },
+      "reward_summary": "+Бонус на аккаунты",
+      "elapsed_sec": 0.45
+    },
+    {
+      "timestamp": "05.11.2026 20:12:42 (МСК)",
+      "target": {
+        "platform": "skinset",
+        "bot": "skinsetup_bot",
+        "code": "HW4Z2R89"
+      },
+      "success_count": 110,
+      "total_accounts": 110,
+      "reasons": {
+        "Активировано на всей ферме": 110
+      },
+      "reward_summary": "+Бонус на аккаунты",
+      "elapsed_sec": 0.45
+    },
+    {
+      "timestamp": "05.11.2026 20:14:36 (МСК)",
+      "target": {
+        "platform": "secretlvl",
+        "bot": "secretlvlbot",
+        "check": "check_7d8fcb30",
+        "url": "https://t.me/secretlvlbot?start=check_7d8fcb30"
+      },
+      "success_count": 110,
+      "total_accounts": 110,
+      "reasons": {
+        "Активировано на всей ферме": 110
+      },
+      "reward_summary": "+Бонус на аккаунты",
+      "elapsed_sec": 0.45
     }
   ]
 }

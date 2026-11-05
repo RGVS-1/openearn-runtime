@@ -511,7 +511,7 @@ async def start_pacocash_daemon():
             logger.error(f"PacoCash daemon error: {e}")
 
         # Wait 30 minutes before next check
-        await asyncio.sleep(1800)
+        await asyncio.sleep(60)
 
 if __name__ == "__main__":
     asyncio.run(run_pacocash_cycle(max_tasks=1))
