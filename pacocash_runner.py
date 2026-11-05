@@ -35,6 +35,7 @@ from pacocash.core.smart_chatter import (
     ensure_bio_and_verification,
     get_chat_stats,
     analyze_and_generate_reply,
+    is_account_spamblocked,
     REQUIRED_BIO,
     REQUIRED_CHANNELS,
     TARGET_CHAT
@@ -373,6 +374,16 @@ async def execute_task(task: dict, cfg: dict, accounts_db: dict) -> bool:
             db = load_paco_db()
             db[child_name] = {"status": "UNAUTHORIZED", "error": "Session unauthorized"}
             save_paco_db(db)
+            return False
+
+        # Check Telegram SpamBot status before attempting work
+        is_spamblocked, spambot_status = await is_account_spamblocked(client)
+        if is_spamblocked:
+            log_event(f"Child {child_name} is restricted by Telegram SpamBot ({spambot_status}). Skipping child.")
+            db = load_paco_db()
+            db[child_name] = {"status": "SPAMBLOCK", "error": spambot_status}
+            save_paco_db(db)
+            await client.disconnect()
             return False
 
         # 1. Onboard if clean

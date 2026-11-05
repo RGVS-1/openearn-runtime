@@ -43,6 +43,22 @@ async def safe_get_entity(client: TelegramClient, entity_name: str):
         logger.warning(f"safe_get_entity {entity_name}: {e}")
         return entity_name
 
+
+async def is_account_spamblocked(client: TelegramClient) -> Tuple[bool, str]:
+    """Checks if account is restricted by Telegram's SpamBot."""
+    try:
+        bot = await safe_get_entity(client, "SpamBot")
+        await client.send_message(bot, "/start")
+        await asyncio.sleep(2.0)
+        msgs = await client.get_messages(bot, limit=1)
+        txt = (msgs[0].text or "") if msgs else ""
+        if "good news" in txt.lower() or "free" in txt.lower() or "no limits" in txt.lower():
+            return False, "CLEAN"
+        return True, "SPAMBLOCK"
+    except Exception as e:
+        logger.warning(f"Error checking SpamBot: {e}")
+        return False, f"UNKNOWN: {e}"
+
 # Global history to prevent repetition across accounts
 _GLOBAL_USED_PHRASES: List[str] = []
 _MAX_GLOBAL_HISTORY = 60
@@ -268,18 +284,19 @@ async def run_smart_chat_session(
     chat = await safe_get_entity(client, TARGET_CHAT)
 
     recv, paid = await get_chat_stats(client, bot)
-    logger.info(f"[{account_name}] Initial stats: received={recv}, paid={paid}/{target_paid}")
+    current_count = max(recv, paid)
+    logger.info(f"[{account_name}] Initial stats: received={recv}, paid={paid} (effective={current_count}/{target_paid})")
     if progress_callback:
-        progress_callback(account_name, paid, target_paid, f"Начальный баланс: {paid}/{target_paid} сообщений")
+        progress_callback(account_name, current_count, target_paid, f"Начальный баланс: {current_count}/{target_paid} сообщений")
 
-    if paid >= target_paid:
-        return {"ok": True, "paid": paid, "already_done": True}
+    if current_count >= target_paid:
+        return {"ok": True, "paid": current_count, "already_done": True}
 
     local_history: List[str] = []
     messages_sent = 0
     consecutive_errors = 0
 
-    while paid < target_paid:
+    while current_count < target_paid:
         try:
             # 1. Fetch recent messages for ambient context safely
             recent_msgs = []
@@ -305,22 +322,24 @@ async def run_smart_chat_session(
 
             messages_sent += 1
             consecutive_errors = 0
-            logger.info(f"[{account_name}] Sent #{messages_sent}: '{reply_text}' (progress approx {paid + messages_sent}/{target_paid})")
+            current_count = max(current_count + 1, recv, paid)
+            logger.info(f"[{account_name}] Sent #{messages_sent}: '{reply_text}' (progress approx {current_count}/{target_paid})")
 
             # 5. Delay before next message (35-65s, safe, natural, and relaxed)
             delay = random.uniform(35.0, 65.0)
             await asyncio.sleep(delay)
 
             # 6. Verify stats with bot every 5 messages or when approaching goal
-            if messages_sent % 5 == 0 or (paid + messages_sent) >= target_paid:
+            if messages_sent % 5 == 0 or current_count >= target_paid:
                 r, p = await get_chat_stats(client, bot)
-                if p > paid:
-                    paid = p
-                logger.info(f"[{account_name}] Verified stats in bot: {paid}/{target_paid} paid messages")
+                recv = max(recv, r)
+                paid = max(paid, p)
+                current_count = max(current_count, recv, paid)
+                logger.info(f"[{account_name}] Verified stats in bot: recv={recv}, paid={paid} (effective={current_count}/{target_paid})")
                 if progress_callback:
-                    progress_callback(account_name, paid, target_paid, f"Оплачено в боте: {paid}/{target_paid}")
+                    progress_callback(account_name, current_count, target_paid, f"Сообщений в боте: {current_count}/{target_paid}")
 
-                if paid >= target_paid:
+                if current_count >= target_paid:
                     break
 
         except SlowModeWaitError as slow_err:
@@ -331,21 +350,22 @@ async def run_smart_chat_session(
             wait_s = flood_err.seconds or 35
             logger.warning(f"[{account_name}] Flood wait: sleeping {wait_s + 10}s")
             await asyncio.sleep(wait_s + 10)
-        except (ChatWriteForbiddenError, UserBannedInChannelError) as ban_err:
-            logger.warning(f"[{account_name}] Account is forbidden from writing in chat: {ban_err}")
-            return {"ok": False, "error": f"Chat restricted: {ban_err}", "paid": paid}
+        except (ChatWriteForbiddenError, UserBannedInChannelError, ChannelPrivateError) as ban_err:
+            logger.warning(f"[{account_name}] Account is forbidden or banned from chat: {ban_err}")
+            return {"ok": False, "error": f"Chat restricted: {ban_err}", "paid": current_count}
         except Exception as e:
             consecutive_errors += 1
             logger.error(f"[{account_name}] Chat error: {type(e).__name__}: {e}")
-            if consecutive_errors >= 5:
-                return {"ok": False, "error": f"Too many consecutive errors: {e}", "paid": paid}
+            if consecutive_errors >= 4:
+                return {"ok": False, "error": f"Too many consecutive errors: {e}", "paid": current_count}
             await asyncio.sleep(12)
 
     # Final verification
     recv, paid = await get_chat_stats(client, bot)
+    final_count = max(recv, paid, current_count)
     return {
-        "ok": paid >= target_paid,
-        "paid": paid,
+        "ok": final_count >= target_paid,
+        "paid": final_count,
         "received": recv,
         "messages_sent": messages_sent
     }
