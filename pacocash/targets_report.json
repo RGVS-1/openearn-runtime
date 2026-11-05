@@ -1,0 +1,441 @@
+[
+  {
+    "parent": "[KZ] Бека +77025071782 2020",
+    "avail": 0.6,
+    "held": 0.1,
+    "status": "DELETED",
+    "alive_children": [
+      "[KZ] Loen +77758024545 2021",
+      "[KZ] Нурлан Нурик +77021009188 2021"
+    ]
+  },
+  {
+    "parent": "[KZ] Gord +77778129686 2025",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[KZ] Арман +77784244446 2024",
+      "[KZ] Серик +77782472004 2024"
+    ]
+  },
+  {
+    "parent": "[KZ] Nimfo +77074157140 2024",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[KZ] UMAR +77474949897 2024",
+      "[KZ] . +77759835304 2024"
+    ]
+  },
+  {
+    "parent": "[KZ] нурбек +77013933333 2020",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "DELETED",
+    "alive_children": [
+      "[KZ] Рамазан +77781301757 2025",
+      "[KZ] Макпал Мако +77023151322 2019"
+    ]
+  },
+  {
+    "parent": "[KZ] Избасар +77000931393 2024",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[KZ] 🕊️ +77771331529 2020",
+      "[KZ] Bekzat +77015616473 2019"
+    ]
+  },
+  {
+    "parent": "[KZ] Madina +77075113245 2024",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[KZ] Bekzat +77015616473 2019"
+    ]
+  },
+  {
+    "parent": "[KZ] Құттыбаев Гүлсезім +77020113461 2025",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[KZ] Шама +77774482820 2025"
+    ]
+  },
+  {
+    "parent": "[KZ] . +77787093187 2023",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[KZ] Diiiwiiki +77772160083 2022"
+    ]
+  },
+  {
+    "parent": "[KZ] SAB.KZ +77005552177 2023",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[KZ] Бак +77005050885 2022"
+    ]
+  },
+  {
+    "parent": "[KZ] Аякоз🥰 +77051688502 2021",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[KZ] クシmsl.edn +77056031563 2021"
+    ]
+  },
+  {
+    "parent": "[KZ] D +77474050846 2021",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[KZ] D +77473609631 2023"
+    ]
+  },
+  {
+    "parent": "[KZ] Ерке Ерке +77089468746 2021",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "DELETED",
+    "alive_children": [
+      "[KZ] ....... ....... +77753961102 2025"
+    ]
+  },
+  {
+    "parent": "[KZ] Нұрбақыт +77002450776 2021",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[KZ] u1zhanyym🦦 +77079483840 2025"
+    ]
+  },
+  {
+    "parent": "[KZ] Amir 08 +77027300575 2022",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[KZ] Ерасыл +77716324046 2025"
+    ]
+  },
+  {
+    "parent": "[KZ] А +77786941020 2022",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[KZ] Bugs Bunny +77716939905 2020"
+    ]
+  },
+  {
+    "parent": "[KZ] Ботакан +77751372236 2022",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[KZ] Demon +77772495688 2026"
+    ]
+  },
+  {
+    "parent": "[KZ] Рамазан +77781301757 2025",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[KZ] Nilufar  +77002367735 2024"
+    ]
+  },
+  {
+    "parent": "[KZ] Макпал Мако +77023151322 2019",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[KZ] ShowTime +77713609515 2025"
+    ]
+  },
+  {
+    "parent": "[KZ] Loen +77758024545 2021",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[KZ] zhah +77765282012 2024"
+    ]
+  },
+  {
+    "parent": "[KZ] Нурлан Нурик +77021009188 2021",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[KZ] Ди +77086138255 2020"
+    ]
+  },
+  {
+    "parent": "[KZ] gmttttt gtm +77076742589 2025",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[KZ] 🍀 +77759944666 2023"
+    ]
+  },
+  {
+    "parent": "[KZ] Tih +77071164344 2025",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[KZ] ... +77711285483 2026"
+    ]
+  },
+  {
+    "parent": "[KZ] Hyesos +77713297691 2025",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[KZ] asem🫀❤️‍🔥 +77715730872 2025"
+    ]
+  },
+  {
+    "parent": "[KZ] Sh +77713609515 2025",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "DELETED",
+    "alive_children": [
+      "[KZ] den_pidor +77085315886 2025"
+    ]
+  },
+  {
+    "parent": "[KZ] Aruzhan Islam +77074528545 2023",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[KZ] CR7 +77003005758 2026"
+    ]
+  },
+  {
+    "parent": "[KZ] zh +77765282012 2024",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "DELETED",
+    "alive_children": [
+      "[KZ] _ 🦈 _ +77476543452 2026"
+    ]
+  },
+  {
+    "parent": "[KZ] .... +77056856239 2026",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "DELETED",
+    "alive_children": [
+      "[KZ] Zhaska +77073136246 2025"
+    ]
+  },
+  {
+    "parent": "[KZ] Sancho Sancho +77789576976 2026",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[KZ] Жасмин Амангелді +77009097383 2026"
+    ]
+  },
+  {
+    "parent": "[KZ] Slaf Eshcbv +77472045680 2026",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "DELETED",
+    "alive_children": [
+      "[KZ] нияз Мушульбаев +77002002529 2024"
+    ]
+  },
+  {
+    "parent": "[KZ] 🕊️ +77771331529 2020",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[KZ] Musa +77754156475 2025"
+    ]
+  },
+  {
+    "parent": "[KZ] Шама +77774482820 2025",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[OTHER] Sagir Jere +2348033359173 2023"
+    ]
+  },
+  {
+    "parent": "[KZ] Diiiwiiki +77772160083 2022",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[OTHER] John Johnson +2348033592840 2025"
+    ]
+  },
+  {
+    "parent": "[KZ] Бак +77005050885 2022",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[OTHER] Junior +2349114579175 2024"
+    ]
+  },
+  {
+    "parent": "[KZ] クシmsl.edn +77056031563 2021",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[PH] Mhargs Sisod +639150624123 2024"
+    ]
+  },
+  {
+    "parent": "[KZ] D +77473609631 2023",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[OTHER] Hein Hein +959764274433 2026"
+    ]
+  },
+  {
+    "parent": "[KZ] ....... ....... +77753961102 2025",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[OTHER] Lil SA 🥷🏾 +959792132610 2022"
+    ]
+  },
+  {
+    "parent": "[KZ] u1zhanyym🦦 +77079483840 2025",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[USA] Anna Rae Dela Cruz +14315451343 2026"
+    ]
+  },
+  {
+    "parent": "[KZ] Ерасыл +77716324046 2025",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[USA] Andrea Anne Soriano +14314572694 2025"
+    ]
+  },
+  {
+    "parent": "[KZ] Bugs Bunny +77716939905 2020",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[USA] Andrea Beth Ramirez +14315442335 2026"
+    ]
+  },
+  {
+    "parent": "[KZ] Demon +77772495688 2026",
+    "avail": 0.5,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[USA] Anna Anne Herrera +14315442997 2026"
+    ]
+  },
+  {
+    "parent": "[KZ] Nilufar Sabirova +77002367735 2024",
+    "avail": 0.0,
+    "held": 0.5,
+    "status": "DELETED",
+    "alive_children": [
+      "[IN] Михаил Ё +918086409603 2024",
+      "[IN] Клавдия Щурова +918088975847 2025",
+      "[IN] Bartola Aleman +918088976969 2024",
+      "[IN] Getulio Ballesteros +918090002619 2023",
+      "[IN] Hermelinda Cazares +918090017306 2023",
+      "[IN] Segismundo Jasso +918090309137 2023",
+      "[KZ] Елена +77023087796 2020",
+      "[KZ] Tima +77028122202 2026",
+      "[KZ] Beisenbaev Temirlan +77002306559 2023",
+      "[KZ] Darina +77052062834 2023",
+      "[KZ] Ekaterina +77053847455 2019",
+      "[KZ] Физиотерапевт +77054283995 2021",
+      "[KZ] 𝚉𝚑𝚊𝚗 +77078181435 2020",
+      "[KZ] Моряк 🚢 +77715363560 2026",
+      "[KZ] Манап Куат +77474966265 2022",
+      "[KZ] Diar +77763253396 2021",
+      "[KZ] Ainura Bessekenova +77779955277 2024",
+      "[KZ] Isall +77028955011 2020",
+      "[KZ] Kobegen Bakit +77779203898 2026"
+    ]
+  },
+  {
+    "parent": "[KZ] Magnat +77772021755  2026",
+    "avail": 0.0,
+    "held": 0.5,
+    "status": "DELETED",
+    "alive_children": [
+      "[KZ] Ker +77076079600 2024",
+      "[KZ] Nimfo +77074157140 2024"
+    ]
+  },
+  {
+    "parent": "[KZ] 𝘳𝘢𝘮𝘪. +77779864114 2021",
+    "avail": 0.0,
+    "held": 0.5,
+    "status": "DELETED",
+    "alive_children": [
+      "[KZ] А +77786941020 2022",
+      "[KZ] Ботакан +77751372236 2022"
+    ]
+  },
+  {
+    "parent": "[KZ] Ахо +77025209353 2026",
+    "avail": 0.0,
+    "held": 0.5,
+    "status": "DELETED",
+    "alive_children": [
+      "[KZ] Ekon +77716995320 2025"
+    ]
+  },
+  {
+    "parent": "[KZ] Aibar 07.. +77765487247 2025",
+    "avail": 0.0,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[OTHER] Okiki supermarket +2347086448613 2023"
+    ]
+  },
+  {
+    "parent": "[KZ] E I +77752829355 2026",
+    "avail": 0.0,
+    "held": 0.0,
+    "status": "COMPLETED",
+    "alive_children": [
+      "[OTHER] Emmanuel Ayomide +2347056672655 2022"
+    ]
+  }
+]

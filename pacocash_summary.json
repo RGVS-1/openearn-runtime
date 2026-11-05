@@ -1,0 +1,10 @@
+{
+  "status": "IDLE",
+  "current_task": null,
+  "last_run": null,
+  "total_withdrawn_count": 35,
+  "total_withdrawn_usdt": 47.5,
+  "stuck_parents_count": 54,
+  "receiver_account": "[RU] Xxxcalibur +79936124946 2025",
+  "recent_events": []
+}

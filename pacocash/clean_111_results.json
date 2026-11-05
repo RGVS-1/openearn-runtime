@@ -1,0 +1,899 @@
+{
+  "timestamp": "2026-10-29T12:57:35.262465",
+  "total": 111,
+  "cleared_count": 36,
+  "already_empty_count": 75,
+  "unauthorized_count": 0,
+  "error_count": 0,
+  "elapsed_seconds": 64.126161,
+  "results": [
+    {
+      "account": "[BY] Danila +375292302391 2025",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "209.50.168.236:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[BY] Hote Angel +375447275044 2024",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "45.3.55.211:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[BY] OG +375447366264 2025",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "209.50.184.159:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[BY] Pisun +375292087236 2026",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "65.111.25.209:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[BY] Snekis +375298497210 2025",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "45.3.52.234:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[BY] Vinexx +375291264818 2026",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "104.207.55.68:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[BY] Vinrod +375333957788 2023",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "216.26.254.255:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[BY] roman +375259792878 2024",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "209.50.179.136:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[ID] Dagger +6285645205751 2026",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "209.50.187.90:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[ID] Falcon +6285645206835 2026",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "104.207.33.113:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[ID] FalconRv +6285643248511 2026",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "104.207.35.213:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[ID] Karissa Dods +6285645236746 2025",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "104.207.46.89:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[ID] WeldXor +6285606788557 2026",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "65.111.4.56:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[ID] ваня +6285606790744 2026",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "45.3.33.49:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] , , +77023555157 2021",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "65.111.5.155:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] . +77072192013 2023",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "45.3.54.59:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] . +77759835304 2024",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "104.167.19.140:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] .... +77022837707 2026",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "216.26.232.36:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] ..... +77074515692 2024",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "216.26.234.46:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] ....... ....... +77753961102 2025",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "104.207.37.174:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Aibar 07.. +77765487247 2025",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "45.3.52.45:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Air  +77779955277 2024",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "65.111.29.66:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Alshinbai +77471303859 2023",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "45.3.51.240:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Amir 08 +77027300575 2022",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "209.50.165.112:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Artur +77786094250 2020",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "65.111.23.109:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Arusan +77767290381  2023",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "216.26.226.134:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Aruzhan Islam +77074528545 2023",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "104.207.59.159:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Beisenbaev Temirlan +77002306559 2023",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "45.3.39.81:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Bekzat +77015616473 2019",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "45.3.38.197:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Bugs Bunny +77716939905 2020",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "65.111.6.107:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Chondark +77779418060 2025",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "65.111.14.248:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] D +77473609631 2023",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "45.3.48.21:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] D +77474050846 2021",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "65.111.31.77:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Darina +77052062834 2023",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "216.26.227.98:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Demon +77772495688 2026",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "209.50.175.22:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Diar +77763253396 2021",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "45.3.42.119:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Diiiwiiki +77772160083 2022",
+      "status": "CLEARED",
+      "old_bio": "🍒🎀",
+      "new_bio": "",
+      "details": "Bio was: '🍒🎀' -> cleared to empty",
+      "proxy": "104.207.54.99:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] E I +77752829355 2026",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "45.3.33.32:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] ENGL +77762997562 2025",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "209.50.179.38:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Ekon +77716995320 2025",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "209.50.176.140:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Eldos +77071689527 2021",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "151.123.178.98:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Gord +77778129686 2025",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "65.111.10.167:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Hyesos +77713297691 2025",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "216.26.237.139:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Isall +77028955011 2020",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "65.111.1.47:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Ker +77076079600 2024",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "209.50.174.27:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Khussein +77051220056 2020",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "209.50.189.72:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Kobegen Bakit +77779203898 2026",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "151.123.176.13:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Kuzdarkyl +77021580352 2024",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "151.123.176.150:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Loen +77758024545 2021",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "45.3.32.186:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Madina +77075113245 2024",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "65.111.0.244:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Musa +77754156475 2025",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "45.3.46.226:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] N A +77711674489 2025",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "216.26.248.31:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Nilufar  +77002367735 2024",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "104.207.44.246:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Nimfo +77074157140 2024",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "209.50.191.78:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Phisio +77054283995 2021",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "45.3.44.118:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Poxxxoronin +77777206517 2025",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "209.50.179.33:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] SAB.KZ +77005552177 2023",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "45.3.35.198:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Sd +77755462539 2025",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "104.207.51.93:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] ShowTime +77713609515 2025",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "104.207.50.150:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Tih +77071164344 2025",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "104.207.49.181:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Tima +77028122202 2026",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "209.50.184.49:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] UMAR +77474949897 2024",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "209.50.161.229:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Ven +77769331522 2025",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "45.3.38.78:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] VwVw +77023624094 2026",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "65.111.24.16:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Zhantore Uzaqbay +77054463425 2026",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "104.207.57.193:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] asem🫀❤️‍🔥 +77715730872 2025",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "45.3.52.15:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] den_pidor +77085315886 2025",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "104.207.59.181:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] gmttttt gtm +77076742589 2025",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "45.3.46.101:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] u1zhanyym🦦 +77079483840 2025",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "65.111.14.201:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] zhah +77765282012 2024",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "216.26.240.194:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] А +77786941020 2022",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "209.50.174.56:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Айару +77023513262 2026",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "209.50.191.21:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Айдос Айдос +77772188511 2024",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "45.3.50.235:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Айсұлтан +77024797702 2026",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "209.50.162.69:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Антон +77760768727 2025",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "216.26.226.144:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Арман +77784244446 2024",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "45.3.44.21:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Аякоз🥰 +77051688502 2021",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "209.50.191.6:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Бак +77005050885 2022",
+      "status": "CLEARED",
+      "old_bio": ".",
+      "new_bio": "",
+      "details": "Bio was: '.' -> cleared to empty",
+      "proxy": "216.26.227.227:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Ботакан +77751372236 2022",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "104.207.44.188:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Ди +77086138255 2020",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "209.50.160.209:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Елена +77023087796 2020",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "65.111.7.73:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Ерасыл +77716324046 2025",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "104.207.35.18:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Избасар +77000931393 2024",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "216.26.236.194:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Макпал Мако +77023151322 2019",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "151.123.177.225:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Манап Куат +77474966265 2022",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "216.26.248.191:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Моряк 🚢 +77715363560 2026",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "209.50.164.139:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Нурлан Нурик +77021009188 2021",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "104.207.45.91:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Нұрбақыт +77002450776 2021",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "209.50.176.163:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Нұреке +77073676789 2026",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "45.3.45.100:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Нұрзат Тажыхан +77085262433 2021",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "65.111.30.18:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Рамазан +77781301757 2025",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "209.50.168.236:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Руслан +77787603318 2026",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "45.3.55.211:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Серик +77782472004 2024",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "209.50.184.159:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Тамерлан moewe +77789308563 2019",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "65.111.25.209:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Тони Старк +77759735609 2026",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "45.3.52.234:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Фархат +77755650640 2020",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "104.207.55.68:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Шама +77774482820 2025",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "216.26.254.255:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Шынгыс Бегимов +77054011117 2023",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "209.50.179.136:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Юша Дудуркаев +77054272644 2023",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "209.50.187.90:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] тимур торгаев +77080261720 2025",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "104.207.33.113:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] Құттыбаев Гүлсезім +77020113461 2025",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "104.207.35.213:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] إسماعيل +77052405862 2024",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "104.207.46.89:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] クシmsl.edn +77056031563 2021",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "65.111.4.56:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] 𝑶𝒏𝒍𝒚 𝒚𝒐𝒖😍😘💕 +77054179293 2022",
+      "status": "CLEARED",
+      "old_bio": "🤣ᅠ︎ 😂 ︎ 🤣ᅠ︎ 😂 ︎ ᅠ ︎ ︎ 😂 ︎ ᅠ ᅠ 🤣",
+      "new_bio": "",
+      "details": "Bio was: '🤣ᅠ︎ 😂 ︎ 🤣ᅠ︎ 😂 ︎ ᅠ ︎ ︎ 😂 ︎ ᅠ ᅠ 🤣' -> cleared to empty",
+      "proxy": "45.3.33.49:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] 🍀 +77759944666 2023",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "65.111.5.155:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] 🕊️ +77771331529 2020",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "45.3.54.59:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[KZ] 🤬 .. +77007131395 2023",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "104.167.19.140:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[RU] Led_pet +79939200265 2025",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "216.26.232.36:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[RU] Raf +79936191035 2024",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "216.26.234.46:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[RU] Xxxcalibur +79936124946 2025",
+      "status": "ALREADY_EMPTY",
+      "old_bio": "",
+      "new_bio": "",
+      "details": "Bio was already empty",
+      "proxy": "104.207.37.174:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    },
+    {
+      "account": "[RU] Игорь филипов +76684195574 2024",
+      "status": "CLEARED",
+      "old_bio": "@winpaco — free case every day!",
+      "new_bio": "",
+      "details": "Bio was: '@winpaco — free case every day!' -> cleared to empty",
+      "proxy": "45.3.52.45:3129:fd5esa51v7h9:fme9s99rfepg9w7"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+    "api_id": 32293468,
+    "api_hash": "0897266f179723de0640905e2f7860f3",
+    "referral_code": "riJVfpUUR",
+    "referral_url": "https://t.me/PacoCashBot?start=riJVfpUUR",
+    "referral_mode": "pyramid",
+    "root_target_referrals": 4,
+    "max_referrals_per_account": 1,
+    "bot_username": "PacoCashBot",
+    "delay_min": 20,
+    "delay_max": 45,
+    "batch_size": 5,
+    "batch_pause_sec": 120,
+    "bio_text": "@winpaco — free case every day!",
+    "receiver_account": "[RU] Xxxcalibur +79936124946 2025",
+    "auto_claim_cryptobot": true,
+    "channels": [
+        "BITVA_EKSTRASENS0V",
+        "pacocartel",
+        "WinPacoLive",
+        "w1paco",
+        "inona4ka"
+    ]
+}

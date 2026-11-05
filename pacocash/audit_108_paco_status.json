@@ -1,0 +1,681 @@
+{
+  "total_accounts": 108,
+  "withdrawn": [
+    {
+      "name": "[BY] Danila +375292302391 2025",
+      "amount": 1.6,
+      "date": "2026-10-20T15:12:45.790744",
+      "status": "CLAIMED"
+    },
+    {
+      "name": "[BY] Hote Angel +375447275044 2024",
+      "amount": 1.6,
+      "date": "2026-10-22T19:18:30.300480",
+      "status": "CLAIMED"
+    },
+    {
+      "name": "[BY] OG +375447366264 2025",
+      "amount": 1.6,
+      "date": "2026-10-22T19:20:54.267627",
+      "status": "CLAIMED"
+    },
+    {
+      "name": "[BY] Pisun +375292087236 2026",
+      "amount": 1.5,
+      "date": "2026-10-22T19:21:28.660651",
+      "status": "CLAIMED"
+    },
+    {
+      "name": "[BY] Snekis +375298497210 2025",
+      "amount": 1.5,
+      "date": "2026-10-22T19:21:59.011747",
+      "status": "CLAIMED"
+    },
+    {
+      "name": "[BY] Vinrod +375333957788 2023",
+      "amount": 1.5,
+      "date": "2026-10-22T19:22:27.472493",
+      "status": "CLAIMED"
+    },
+    {
+      "name": "[BY] roman +375259792878 2024",
+      "amount": 1.6,
+      "date": "2026-10-20T17:59:30.821490",
+      "status": "CLAIMED"
+    },
+    {
+      "name": "[KZ] , , +77023555157 2021",
+      "amount": 1.0,
+      "date": "2026-10-22T19:27:53.914284",
+      "status": "CLAIMED"
+    },
+    {
+      "name": "[KZ] . +77072192013 2023",
+      "amount": 1.5,
+      "date": "2026-10-22T19:26:56.212414",
+      "status": "CLAIMED"
+    },
+    {
+      "name": "[KZ] Artur +77786094250 2020",
+      "amount": 1.6,
+      "date": "2026-10-22T19:18:00.290912",
+      "status": "CLAIMED"
+    },
+    {
+      "name": "[KZ] Arusan +77767290381  2023",
+      "amount": 1.6,
+      "date": "2026-10-22T19:19:24.982794",
+      "status": "CLAIMED"
+    },
+    {
+      "name": "[KZ] Bekzat +77015616473 2019",
+      "amount": 1.1,
+      "date": "2026-10-20T15:13:43.401113",
+      "status": "CLAIMED"
+    },
+    {
+      "name": "[KZ] Ker +77076079600 2024",
+      "amount": 1.5,
+      "date": "2026-10-22T19:23:29.614919",
+      "status": "CLAIMED"
+    },
+    {
+      "name": "[KZ] Kuzdarkyl +77021580352 2024",
+      "amount": 1.5,
+      "date": "2026-10-22T14:25:32.896974",
+      "status": "CLAIMED"
+    },
+    {
+      "name": "[KZ] N A +77711674489 2025",
+      "amount": 1.5,
+      "date": "2026-10-22T19:29:16.166564",
+      "status": "CLAIMED"
+    },
+    {
+      "name": "[KZ] Poxxxoronin +77777206517 2025",
+      "amount": 1.0,
+      "date": "2026-10-22T19:23:58.799819",
+      "status": "CLAIMED"
+    },
+    {
+      "name": "[KZ] Ven +77769331522 2025",
+      "amount": 1.5,
+      "date": "2026-10-22T19:24:24.403330",
+      "status": "CLAIMED"
+    },
+    {
+      "name": "[KZ] VwVw +77023624094 2026",
+      "amount": 1.0,
+      "date": "2026-10-22T19:30:18.394172",
+      "status": "CLAIMED"
+    },
+    {
+      "name": "[KZ] Zhantore Uzaqbay +77054463425 2026",
+      "amount": 1.5,
+      "date": "2026-10-22T19:29:47.169423",
+      "status": "CLAIMED"
+    },
+    {
+      "name": "[KZ] Серик +77782472004 2024",
+      "amount": 1.0,
+      "date": "2026-10-22T14:26:51.439409",
+      "status": "CLAIMED"
+    },
+    {
+      "name": "[KZ] Тамерлан moewe +77789308563 2019",
+      "amount": 1.6,
+      "date": "2026-10-22T19:18:58.451267",
+      "status": "CLAIMED"
+    },
+    {
+      "name": "[KZ] Тони Старк +77759735609 2026",
+      "amount": 1.5,
+      "date": "2026-10-22T19:28:21.685201",
+      "status": "CLAIMED"
+    },
+    {
+      "name": "[KZ] Шынгыс Бегимов +77054011117 2023",
+      "amount": 1.5,
+      "date": "2026-10-22T19:26:26.471025",
+      "status": "CLAIMED"
+    },
+    {
+      "name": "[KZ] 🤬 .. +77007131395 2023",
+      "amount": 1.5,
+      "date": "2026-10-22T19:25:54.317873",
+      "status": "CLAIMED"
+    },
+    {
+      "name": "[RU] Led_pet +79939200265 2025",
+      "amount": 1.0,
+      "date": "2026-10-22T19:24:52.559617",
+      "status": "CLAIMED"
+    },
+    {
+      "name": "[RU] Raf +79936191035 2024",
+      "amount": 1.1,
+      "date": "2026-10-22T19:19:53.241519",
+      "status": "CLAIMED"
+    },
+    {
+      "name": "[RU] Xxxcalibur +79936124946 2025",
+      "amount": 1.5,
+      "date": "2026-10-20T18:01:02.550786",
+      "status": "CLAIMED"
+    },
+    {
+      "name": "[RU] Игорь филипов +76684195574 2024",
+      "amount": 1.0,
+      "date": "2026-10-20T18:00:00.746044",
+      "status": "CLAIMED"
+    }
+  ],
+  "participated_no_payout": [
+    {
+      "name": "[KZ] .... +77022837707 2026",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 1,
+      "parent_ref": "rhF9mSUkN"
+    },
+    {
+      "name": "[KZ] ....... ....... +77753961102 2025",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 1,
+      "parent_ref": "rECvdYiz4"
+    },
+    {
+      "name": "[KZ] Aibar 07.. +77765487247 2025",
+      "status": "COMPLETED",
+      "available": 0.0,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 1,
+      "parent_ref": "r2u3iHZdH"
+    },
+    {
+      "name": "[KZ] Amir 08 +77027300575 2022",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 1,
+      "parent_ref": "rdJoCea7E"
+    },
+    {
+      "name": "[KZ] Aruzhan Islam +77074528545 2023",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 1,
+      "parent_ref": "rGKMCjXgr"
+    },
+    {
+      "name": "[KZ] Beisenbaev Temirlan +77002306559 2023",
+      "status": "COMPLETED",
+      "available": 0.0,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 0,
+      "parent_ref": "rtVWTq4pk"
+    },
+    {
+      "name": "[KZ] Bugs Bunny +77716939905 2020",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 1,
+      "parent_ref": "rdyQbbUxU"
+    },
+    {
+      "name": "[KZ] D +77473609631 2023",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 1,
+      "parent_ref": "riin0rlrf"
+    },
+    {
+      "name": "[KZ] D +77474050846 2021",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 1,
+      "parent_ref": "rXJbE5N2C"
+    },
+    {
+      "name": "[KZ] Darina +77052062834 2023",
+      "status": "COMPLETED",
+      "available": 0.0,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 0,
+      "parent_ref": "rtVWTq4pk"
+    },
+    {
+      "name": "[KZ] Demon +77772495688 2026",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 1,
+      "parent_ref": "rqyvbMRhA"
+    },
+    {
+      "name": "[KZ] Diar +77763253396 2021",
+      "status": "COMPLETED",
+      "available": 0.0,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 0,
+      "parent_ref": "rtVWTq4pk"
+    },
+    {
+      "name": "[KZ] Diiiwiiki +77772160083 2022",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 1,
+      "parent_ref": "rhsD7GQa8"
+    },
+    {
+      "name": "[KZ] E I +77752829355 2026",
+      "status": "COMPLETED",
+      "available": 0.0,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 1,
+      "parent_ref": "rzhaC055r"
+    },
+    {
+      "name": "[KZ] ENGL +77762997562 2025",
+      "status": "ARCHIVED",
+      "available": 0.6,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 0,
+      "parent_ref": "rqKpprP1r"
+    },
+    {
+      "name": "[KZ] Ekon +77716995320 2025",
+      "status": "COMPLETED",
+      "available": 0.0,
+      "held": 0.5,
+      "pending_ref": 0.0,
+      "referrals_count": 0,
+      "parent_ref": "rbTplWBOB"
+    },
+    {
+      "name": "[KZ] Gord +77778129686 2025",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 2,
+      "parent_ref": "rrnLEDl3V"
+    },
+    {
+      "name": "[KZ] Hyesos +77713297691 2025",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 1,
+      "parent_ref": "rCtiSMXrn"
+    },
+    {
+      "name": "[KZ] Isall +77028955011 2020",
+      "status": "COMPLETED",
+      "available": 0.0,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 0,
+      "parent_ref": "rtVWTq4pk"
+    },
+    {
+      "name": "[KZ] Kobegen Bakit +77779203898 2026",
+      "status": "COMPLETED",
+      "available": 0.0,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 0,
+      "parent_ref": "rtVWTq4pk"
+    },
+    {
+      "name": "[KZ] Loen +77758024545 2021",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 1,
+      "parent_ref": "rh0CRLmRN"
+    },
+    {
+      "name": "[KZ] Madina +77075113245 2024",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 1,
+      "parent_ref": "rtyvTJ8Dh"
+    },
+    {
+      "name": "[KZ] Musa +77754156475 2025",
+      "status": "COMPLETED",
+      "available": 0.0,
+      "held": 0.5,
+      "pending_ref": 0.0,
+      "referrals_count": 0,
+      "parent_ref": "rYpFRymAl"
+    },
+    {
+      "name": "[KZ] Nilufar  +77002367735 2024",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 0,
+      "parent_ref": "rh2CwSgvl"
+    },
+    {
+      "name": "[KZ] Nimfo +77074157140 2024",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 2,
+      "parent_ref": "rNu71S6QZ"
+    },
+    {
+      "name": "[KZ] SAB.KZ +77005552177 2023",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 1,
+      "parent_ref": "r9iLjmvPT"
+    },
+    {
+      "name": "[KZ] Sd +77755462539 2025",
+      "status": "COMPLETED",
+      "available": 0.0,
+      "held": 0.5,
+      "pending_ref": 0.0,
+      "referrals_count": 0,
+      "parent_ref": "roC4NfsqX"
+    },
+    {
+      "name": "[KZ] ShowTime +77713609515 2025",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 0,
+      "parent_ref": "rmPy571Ed"
+    },
+    {
+      "name": "[KZ] Tih +77071164344 2025",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 1,
+      "parent_ref": "rULoM0r7z"
+    },
+    {
+      "name": "[KZ] Tima +77028122202 2026",
+      "status": "COMPLETED",
+      "available": 0.0,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 0,
+      "parent_ref": "rtVWTq4pk"
+    },
+    {
+      "name": "[KZ] UMAR +77474949897 2024",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 1,
+      "parent_ref": "rqmBUsxhP"
+    },
+    {
+      "name": "[KZ] asem🫀❤️‍🔥 +77715730872 2025",
+      "status": "COMPLETED",
+      "available": 0.0,
+      "held": 0.5,
+      "pending_ref": 0.0,
+      "referrals_count": 0,
+      "parent_ref": "rl5VzrriA"
+    },
+    {
+      "name": "[KZ] den_pidor +77085315886 2025",
+      "status": "COMPLETED",
+      "available": 0.0,
+      "held": 0.5,
+      "pending_ref": 0.0,
+      "referrals_count": 0,
+      "parent_ref": "rIB7Jsoj3"
+    },
+    {
+      "name": "[KZ] gmttttt gtm +77076742589 2025",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 1,
+      "parent_ref": "rULoM0r7z"
+    },
+    {
+      "name": "[KZ] u1zhanyym🦦 +77079483840 2025",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 1,
+      "parent_ref": "rs1Dpsz16"
+    },
+    {
+      "name": "[KZ] А +77786941020 2022",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 1,
+      "parent_ref": "rQ02gjCzX"
+    },
+    {
+      "name": "[KZ] Айару +77023513262 2026",
+      "status": "ARCHIVED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 0,
+      "parent_ref": "rWFeZYFR6"
+    },
+    {
+      "name": "[KZ] Аякоз🥰 +77051688502 2021",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 1,
+      "parent_ref": "r793bfmxG"
+    },
+    {
+      "name": "[KZ] Бак +77005050885 2022",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 1,
+      "parent_ref": "rVWCOrpSA"
+    },
+    {
+      "name": "[KZ] Ботакан +77751372236 2022",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 1,
+      "parent_ref": "rQ02gjCzX"
+    },
+    {
+      "name": "[KZ] Елена +77023087796 2020",
+      "status": "COMPLETED",
+      "available": 0.0,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 0,
+      "parent_ref": "rtVWTq4pk"
+    },
+    {
+      "name": "[KZ] Ерасыл +77716324046 2025",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 1,
+      "parent_ref": "rrHvJ3Tqg"
+    },
+    {
+      "name": "[KZ] Избасар +77000931393 2024",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 2,
+      "parent_ref": "rtyvTJ8Dh"
+    },
+    {
+      "name": "[KZ] Макпал Мако +77023151322 2019",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 1,
+      "parent_ref": "r9HqQugF4"
+    },
+    {
+      "name": "[KZ] Манап Куат +77474966265 2022",
+      "status": "COMPLETED",
+      "available": 0.0,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 0,
+      "parent_ref": "rtVWTq4pk"
+    },
+    {
+      "name": "[KZ] Моряк 🚢 +77715363560 2026",
+      "status": "COMPLETED",
+      "available": 0.0,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 0,
+      "parent_ref": "rtVWTq4pk"
+    },
+    {
+      "name": "[KZ] Нурлан Нурик +77021009188 2021",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 1,
+      "parent_ref": "rh0CRLmRN"
+    },
+    {
+      "name": "[KZ] Нұрбақыт +77002450776 2021",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 1,
+      "parent_ref": "rdJoCea7E"
+    },
+    {
+      "name": "[KZ] Шама +77774482820 2025",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 1,
+      "parent_ref": "rCOZMhqn2"
+    },
+    {
+      "name": "[KZ] Құттыбаев Гүлсезім +77020113461 2025",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 1,
+      "parent_ref": "rUYyQpNOI"
+    },
+    {
+      "name": "[KZ] クシmsl.edn +77056031563 2021",
+      "status": "COMPLETED",
+      "available": 0.5,
+      "held": 0.0,
+      "pending_ref": 0.0,
+      "referrals_count": 1,
+      "parent_ref": "rlq3DfDUM"
+    },
+    {
+      "name": "[KZ] 𝑶𝒏𝒍𝒚 𝒚𝒐𝒖😍😘💕 +77054179293 2022",
+      "status": "COMPLETED",
+      "available": 0.0,
+      "held": 0.5,
+      "pending_ref": 0.0,
+      "referrals_count": 0,
+      "parent_ref": "rRXZARb6T"
+    },
+    {
+      "name": "[KZ] 🍀 +77759944666 2023",
+      "status": "COMPLETED",
+      "available": 0.0,
+      "held": 0.5,
+      "pending_ref": 0.0,
+      "referrals_count": 0,
+      "parent_ref": "rlLfYjyhb"
+    }
+  ],
+  "never_participated": [
+    "[KZ] . +77477169455 2020",
+    "[KZ] 6767 +77787029173 2025",
+    "[KZ] Air  +77779955277 2024",
+    "[KZ] Alshinbai +77471303859 2023",
+    "[KZ] Dina Maratkyzy +77750411804 2020",
+    "[KZ] George Reed +77072438607 2026",
+    "[KZ] Khussein +77051220056 2020",
+    "[KZ] Koilan Tamasha +77784932618 2025",
+    "[KZ] Phisio +77054283995 2021",
+    "[KZ] Tamosyaaaaaa +77052241850 2026",
+    "[KZ] Антон +77760768727 2025",
+    "[KZ] Даша +77473746725 2025",
+    "[KZ] Нұреке +77073676789 2026",
+    "[KZ] Просто ками +77057641092 2025",
+    "[KZ] Фархат +77755650640 2020",
+    "[KZ] Юша Дудуркаев +77054272644 2023",
+    "[KZ] тимур торгаев +77080261720 2025",
+    "[UZ] Alice  +998701163100 2026",
+    "[UZ] Clay +998953586615 2025",
+    "[UZ] Denise +998777306761 2026",
+    "[UZ] Guen +998777970011 2026",
+    "[UZ] Hekel +998701294611 2026",
+    "[UZ] Hend +998777991030 2025",
+    "[UZ] KoKo +998776460565 2026",
+    "[UZ] Mr Wright +998701355552 2026",
+    "[UZ] Sean  +998777971062 2026",
+    "[UZ] Sharon +998779442358 2026"
+  ]
+}
