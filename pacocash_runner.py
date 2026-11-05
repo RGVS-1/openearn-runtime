@@ -208,13 +208,31 @@ def build_execution_plan() -> List[dict]:
         except Exception:
             pass
 
-    # Build tasks
+    # Build tasks: Prioritize fresh clean accounts first for maximum reliability and immediate payouts!
     tasks = []
     used_children = set()
     used_parents = set()
 
-    # Step A: Match parents with their existing leaf children
+    # Step A: Match parents with fresh clean accounts FIRST
+    clean_idx = 0
+    for p_name, p_ref, p_avail, _ in parents:
+        if clean_idx < len(clean_candidates):
+            child_name = clean_candidates[clean_idx]
+            clean_idx += 1
+            tasks.append({
+                "parent": p_name,
+                "parent_ref_code": p_ref,
+                "child": child_name,
+                "is_clean": True,
+                "target_paid": 51
+            })
+            used_children.add(child_name)
+            used_parents.add(p_name)
+
+    # Step B: Match remaining parents with existing leaf children
     for p_name, p_ref, p_avail, p_children in parents:
+        if p_name in used_parents:
+            continue
         matched_child = None
         for c in p_children:
             if c in valid_sessions and c not in withdrawn_set and c not in used_children:
@@ -229,24 +247,6 @@ def build_execution_plan() -> List[dict]:
                 "target_paid": 51
             })
             used_children.add(matched_child)
-            used_parents.add(p_name)
-
-    # Step B: Match remaining parents with clean accounts
-    clean_idx = 0
-    for p_name, p_ref, p_avail, _ in parents:
-        if p_name in used_parents:
-            continue
-        if clean_idx < len(clean_candidates):
-            child_name = clean_candidates[clean_idx]
-            clean_idx += 1
-            tasks.append({
-                "parent": p_name,
-                "parent_ref_code": p_ref,
-                "child": child_name,
-                "is_clean": True,
-                "target_paid": 51
-            })
-            used_children.add(child_name)
             used_parents.add(p_name)
 
     log_event(f"Built execution plan: {len(tasks)} tasks queued for activation and payout.")

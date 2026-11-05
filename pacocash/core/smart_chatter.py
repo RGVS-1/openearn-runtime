@@ -329,7 +329,8 @@ async def run_smart_chat_session(
             err_str = str(e).lower()
             consecutive_errors += 1
             logger.error(f"[{account_name}] Chat error: {e}")
-            if "banned" in err_str or "restricted" in err_str or "rights" in err_str:
+            if "banned" in err_str or "restricted" in err_str or "rights" in err_str or "can't write" in err_str or "write_forbidden" in err_str:
+                logger.warning(f"[{account_name}] Account is muted/restricted in chat: {e}")
                 return {"ok": False, "error": f"Chat restricted: {e}", "paid": paid}
             if consecutive_errors >= 5:
                 return {"ok": False, "error": f"Too many consecutive errors: {e}", "paid": paid}
