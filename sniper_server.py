@@ -1350,12 +1350,12 @@ async def run_telegram_listener():
             except Exception as e:
                 logger.info(f"Subscription status: {e}")
 
-            def process_message(msg):
+            def process_message(msg, is_realtime: bool = False):
                 if msg.id in PROCESSED_MESSAGE_IDS:
                     return
                 PROCESSED_MESSAGE_IDS.add(msg.id)
                 raw_text = msg.raw_text or msg.message or msg.text or ""
-                logger.info(f"⚡ New promo in @lh_promocodes (ID: {msg.id}): {raw_text[:100]}...")
+                logger.info(f"⚡ Intercepted promo in @lh_promocodes (ID: {msg.id}, realtime={is_realtime}): {raw_text[:100]}...")
                 targets = parse_channel_post(raw_text, getattr(msg, "entities", None), getattr(msg, "reply_markup", None))
                 if targets:
                     msg_dt = msg.date if hasattr(msg, "date") and msg.date else datetime.now(timezone.utc)
@@ -1371,18 +1371,19 @@ async def run_telegram_listener():
                         "text_preview": re.sub(r"[*_`]", "", raw_text)[:120]
                     })
                     save_promos_history()
-                    asyncio.create_task(dispatch_promo_targets(targets))
+                    # Only dispatch live to 110 accounts if intercepted in realtime!
+                    if is_realtime:
+                        asyncio.create_task(dispatch_promo_targets(targets))
 
             @client.on(events.NewMessage(chats=channel))
             async def on_new_promo(event):
-                process_message(event.message)
+                process_message(event.message, is_realtime=True)
 
             try:
                 init_msgs = await client.get_messages(channel, limit=30)
                 for m in reversed(init_msgs):
                     if m.id not in PROCESSED_MESSAGE_IDS:
-                        logger.info(f"⚡ Startup catch-up: Processing post #{m.id}...")
-                        process_message(m)
+                        process_message(m, is_realtime=False)
                 logger.info(f"Initialized listener with {len(PROCESSED_MESSAGE_IDS)} messages.")
 
             except Exception as e:
@@ -1407,7 +1408,7 @@ async def run_telegram_listener():
 
                                 logger.info(f"⚡ Backup poller detected new post #{m.id}!")
 
-                                process_message(m)
+                                process_message(m, is_realtime=True)
 
                     except Exception:
 
@@ -1915,7 +1916,7 @@ async def main():
 
     try:
 
-        await asyncio.gather(t1, t2, t3, t4, t6, t7)
+        await asyncio.gather(t1, t2, t3, t4, t6, t7, return_exceptions=True)
 
     except asyncio.CancelledError:
 
