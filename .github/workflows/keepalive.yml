@@ -1,0 +1,17 @@
+name: Render KeepAlive
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render Service
+        run: |
+          echo "Pinging openearn-sniper on Render..."
+          curl -sS -m 30 "https://openearn-sniper.onrender.com/health" || true
+          echo ""
+          curl -sS -m 30 "https://openearn-sniper.onrender.com/api/pacocash" || true

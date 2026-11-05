@@ -66,40 +66,16 @@ _MAX_GLOBAL_HISTORY = 60
 # --- Clean, 100% natural, unobtrusive phrases matching @ChatPaco gambling/dice environment ---
 # NO mentions of 51, sms, messages, bio, cryptobot, cheque, webview, payout or rules!
 
-REACTIONS_TO_WIN = [
-    "красава, грац", "норм поднял", "хорош", "тащит сегодня прям",
-    "поздравляю", "красиво сыграно", "фартит", "мощно",
-    "грац", "чисто на опыте", "красавчик", "вот это фарт",
-    "вовремя стопайся только", "хороший куш", "грац с победой",
-    "на тоненького зашло", "жестко затащил", "топчик"
+DICE_COMMANDS = [
+    "Чет 1", "Нечет 1", "Б 1", "М 1", "Чет", "Нечет", "Б", "М",
+    "Чет 0.5", "Нечет 0.5", "Б 0.5", "М 0.5", "Т 1", "К 1", "Чет 2",
+    "Нечет 2", "Б 2", "М 2", "Дабл 1", "Чет 0.3", "Б 0.3"
 ]
 
-REACTIONS_TO_LOSS = [
-    "бывает, отыграешь", "не тильтуй главное", "жесть конечно",
-    "казик дело такое", "бывает че", "лучше перерыв сделать",
-    "не расстраивайся", "отыграешься еще", "да уж, обидно",
-    "на костях чисто рандом", "ну такое конечно", "аккуратнее со ставками"
-]
-
-REACTIONS_TO_BONUS = [
-    "Бонус", "бонус", "тоже бонус забрал", "у меня еще кд висит",
-    "спс что напомнил, ща чекну", "забыл совсем про бонус",
-    "у меня через час только откатит", "кд быстро летит", "надо тоже забрать пойти",
-    "бонус мелочь а приятно"
-]
-
-CASUAL_BANTER = [
-    "Бонус", "бонус", "ку всем кто в чате", "всем доброго времени", "как успехи у народа?",
-    "живой чат сегодня прям", "всем удачи сегодня", "фарта мужики", "главное без азарта жесткого",
-    "чисто на расслабоне сижу", "да уж", "согласен полностью", "жиза",
-    "было такое", "ну да", "посмотрим как пойдет", "по тихой общаемся",
-    "нормально так", "все на месте", "плюс", "да", "ну как сказать",
-    "время покажет", "поглядим", "движ идет", "норм тема",
-    "всем зеленых свечей", "надеюсь сегодня повезет", "день неплохой сегодня",
-    "главное не спешить", "в кости чисто по фану катать надо",
-    "тоже тут сижу", "всем профита", "активчик хороший", "потихоньку двигаемся",
-    "красота", "погнали", "го", "плюсую", "по факту", "удачи всем",
-    "сегодня хороший день", "норм", "хорош", "фарту масти"
+GAMBLING_REACTIONS = [
+    "красава", "норм зашло", "грац", "бывает че", "да уж", "плюс",
+    "жесть конечно", "хорош", "чисто рандом", "топчик", "ахах", "красиво",
+    "не тильтуй главное", "фартит сегодня", "вовремя стопайся", "красавчик"
 ]
 
 def _pick_unique_phrase(pool: List[str], local_history: List[str]) -> str:
@@ -107,10 +83,10 @@ def _pick_unique_phrase(pool: List[str], local_history: List[str]) -> str:
     global _GLOBAL_USED_PHRASES
     candidates = [
         p for p in pool
-        if p not in _GLOBAL_USED_PHRASES[-_MAX_GLOBAL_HISTORY:] and p not in local_history[-20:]
+        if p not in _GLOBAL_USED_PHRASES[-_MAX_GLOBAL_HISTORY:] and p not in local_history[-15:]
     ]
     if not candidates:
-        candidates = [p for p in pool if p not in local_history[-10:]]
+        candidates = [p for p in pool if p not in local_history[-8:]]
     if not candidates:
         candidates = pool
 
@@ -123,29 +99,16 @@ def _pick_unique_phrase(pool: List[str], local_history: List[str]) -> str:
 
 def analyze_and_generate_reply(recent_messages: List[Message], local_history: List[str]) -> Tuple[str, Optional[int]]:
     """
-    Analyzes recent chat messages from @ChatPaco and returns a natural phrase.
-    NEVER replies with reply_to (always sends to general chat flow to prevent awkward replies).
+    Analyzes recent chat messages from @ChatPaco and returns a 100% natural gambling/dice phrase or bet.
+    75% of messages are natural dice bets ('Чет 1', 'Б 1', 'М 1', etc.) which blend in seamlessly.
+    25% are short realistic player reactions ('красава', 'норм зашло', 'бывает че').
     """
-    if not recent_messages:
-        return _pick_unique_phrase(CASUAL_BANTER, local_history), None
+    # 75% of the time, post a realistic dice bet command
+    if random.random() < 0.75:
+        return _pick_unique_phrase(DICE_COMMANDS, local_history), None
 
-    # Check recent messages for context
-    for m in recent_messages[:4]:
-        t = (m.text or "").lower()
-        if "победитель:" in t or "результаты #" in t or "выигрыш:" in t:
-            return _pick_unique_phrase(REACTIONS_TO_WIN, local_history), None
-        elif "проиграл" in t or "поражение" in t:
-            return _pick_unique_phrase(REACTIONS_TO_LOSS, local_history), None
-        elif "бонус" in t or "кд" in t:
-            return _pick_unique_phrase(REACTIONS_TO_BONUS, local_history), None
-        elif any(k in t for k in ["куб", "кости", "дуэль", "ставка", "банк", "х2"]):
-            if any(k in t for k in ["поднял", "занес", "выиграл", "плюс"]):
-                return _pick_unique_phrase(REACTIONS_TO_WIN, local_history), None
-            elif any(k in t for k in ["слил", "минус", "проиграл", "ноль"]):
-                return _pick_unique_phrase(REACTIONS_TO_LOSS, local_history), None
-
-    # Default natural Russian casual gambling banter
-    return _pick_unique_phrase(CASUAL_BANTER, local_history), None
+    # 25% of the time, post a short gambling reaction
+    return _pick_unique_phrase(GAMBLING_REACTIONS, local_history), None
 
 
 async def get_chat_stats(client: TelegramClient, bot_entity=None) -> Tuple[int, int]:
