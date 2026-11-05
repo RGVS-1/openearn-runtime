@@ -249,6 +249,9 @@ def build_execution_plan() -> List[dict]:
         matched_child = None
         for c in p_children:
             if c in valid_sessions and c not in withdrawn_set and c not in used_children:
+                child_status = db.get(c, {}).get("status")
+                if child_status in ["RESTRICTED", "SPAMBLOCK", "DEAD", "COMPLETED", "DELETED", "UNAUTHORIZED"]:
+                    continue
                 matched_child = c
                 break
         if matched_child:

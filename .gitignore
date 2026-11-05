@@ -12,3 +12,5 @@ vault_key.txt
 __pycache__/
 jvault_accounts_state.json
 ton_wallets.json
+config.bat
+node_modules
