@@ -1,3 +1,20 @@
+async def safe_get_entity(client: TelegramClient, entity_name: str):
+    try:
+        from telethon.tl.functions.contacts import ResolveUsernameRequest
+        clean = entity_name.lstrip('@')
+        resolved = await client(ResolveUsernameRequest(clean))
+        if resolved.chats:
+            return resolved.chats[0]
+        if resolved.users:
+            return resolved.users[0]
+    except Exception:
+        pass
+    try:
+        return await client.get_entity(entity_name)
+    except Exception as e:
+        logger.warning(f"safe_get_entity {entity_name}: {e}")
+        return entity_name
+
 import asyncio
 import logging
 import random
@@ -168,12 +185,13 @@ def analyze_and_generate_reply(recent_messages: List[Message], local_history: Li
     return phrase, None
 
 
-async def get_chat_stats(client: TelegramClient, bot_entity) -> Tuple[int, int]:
+async def get_chat_stats(client: TelegramClient, bot_entity=None) -> Tuple[int, int]:
     """Returns (received_messages, paid_messages) from PacoCashBot."""
     try:
-        await client.send_message(bot_entity, "/start")
+        bot = await safe_get_entity(client, "PacoCashBot")
+        await client.send_message(bot, "/start")
         await asyncio.sleep(2.0)
-        msgs = await client.get_messages(bot_entity, limit=3)
+        msgs = await client.get_messages(bot, limit=3)
         for m in msgs:
             if m.reply_markup and hasattr(m.reply_markup, "rows"):
                 for r in m.reply_markup.rows:
@@ -181,7 +199,7 @@ async def get_chat_stats(client: TelegramClient, bot_entity) -> Tuple[int, int]:
                         if getattr(b, "data", None) == b"u:pay:home":
                             await m.click(data=b"u:pay:home")
                             await asyncio.sleep(2.2)
-                            refreshed = await client.get_messages(bot_entity, ids=m.id)
+                            refreshed = await client.get_messages(bot, ids=m.id)
                             recv = 0
                             paid = 0
                             for line in (refreshed.text or "").split("\n"):
@@ -199,16 +217,17 @@ async def get_chat_stats(client: TelegramClient, bot_entity) -> Tuple[int, int]:
     return 0, 0
 
 
-async def ensure_bio_and_verification(client: TelegramClient, bot_entity) -> bool:
+async def ensure_bio_and_verification(client: TelegramClient, bot_entity=None) -> bool:
     """Ensures account has the required bio and is verified in PacoCashBot."""
     try:
         await client(UpdateProfileRequest(about=REQUIRED_BIO))
         await asyncio.sleep(1.0)
 
+        bot = await safe_get_entity(client, "PacoCashBot")
         # Click u:pay:home then u:pay:bio in bot
-        await client.send_message(bot_entity, "/start")
+        await client.send_message(bot, "/start")
         await asyncio.sleep(2.0)
-        msgs = await client.get_messages(bot_entity, limit=3)
+        msgs = await client.get_messages(bot, limit=3)
         for m in msgs:
             if m.reply_markup and hasattr(m.reply_markup, "rows"):
                 for r in m.reply_markup.rows:
@@ -218,7 +237,7 @@ async def ensure_bio_and_verification(client: TelegramClient, bot_entity) -> boo
                             await asyncio.sleep(2.0)
                             break
 
-        msgs = await client.get_messages(bot_entity, limit=2)
+        msgs = await client.get_messages(bot, limit=2)
         for m in msgs:
             if m.reply_markup and hasattr(m.reply_markup, "rows"):
                 for r in m.reply_markup.rows:
@@ -259,8 +278,8 @@ async def run_smart_chat_session(
     - Prevents canned repetitive spam.
     - Automatically checks verified count in PacoCashBot and stops at target_paid.
     """
-    bot = await client.get_entity("PacoCashBot")
-    chat = await client.get_entity(TARGET_CHAT)
+    bot = await safe_get_entity(client, "PacoCashBot")
+    chat = await safe_get_entity(client, TARGET_CHAT)
 
     await ensure_bio_and_verification(client, bot)
     await ensure_joined_channels(client)

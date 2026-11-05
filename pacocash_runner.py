@@ -42,6 +42,14 @@ from pacocash.core.smart_chatter import (
 from pacocash.core.paco_withdraw import attempt_account_withdrawal
 from pacocash.core.cryptobot_claimer import claim_check_with_account
 
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler("pacocash_runner.log", encoding="utf-8")
+    ]
+)
 logger = logging.getLogger("pacocash.runner")
 
 DATABASE_PATH = os.path.join(PACO_DIR, "database.json")
@@ -274,7 +282,10 @@ async def withdraw_and_claim_account(
         cfg["api_hash"],
         proxy=tel_proxy,
         connection_retries=2,
-        timeout=12.0
+        timeout=12.0,
+        flood_sleep_threshold=24,
+        catch_up=False,
+        **meta.get("device", {})
     )
 
     try:
@@ -343,7 +354,10 @@ async def execute_task(task: dict, cfg: dict, accounts_db: dict) -> bool:
         cfg["api_hash"],
         proxy=tel_proxy,
         connection_retries=2,
-        timeout=12.0
+        timeout=12.0,
+        flood_sleep_threshold=24,
+        catch_up=False,
+        **meta.get("device", {})
     )
 
     try:
@@ -352,13 +366,11 @@ async def execute_task(task: dict, cfg: dict, accounts_db: dict) -> bool:
             log_event(f"Error: Child {child_name} is unauthorized")
             return False
 
-        bot_ent = await client.get_input_entity("PacoCashBot")
-        bot = InputUser(bot_ent.user_id, bot_ent.access_hash)
-
         # 1. Onboard if clean
         if is_clean:
+            bot_input = await client.get_input_entity("PacoCashBot")
             log_event(f"Onboarding clean child '{child_name}' with parent ref '{parent_ref}'...")
-            await client(StartBotRequest(bot=bot, peer=bot, start_param=parent_ref))
+            await client(StartBotRequest(bot=bot_input, peer=bot_input, start_param=parent_ref))
             await asyncio.sleep(2.5)
 
             # Record in database.json
@@ -374,18 +386,7 @@ async def execute_task(task: dict, cfg: dict, accounts_db: dict) -> bool:
                     ch_list.append(child_name)
             save_paco_db(db)
 
-        # 2. Setup Bio & Channels
-        log_event(f"Configuring bio and joining channels for '{child_name}'...")
-        await ensure_bio_and_verification(client, bot)
-        for ch in REQUIRED_CHANNELS:
-            try:
-                ent = await client.get_entity(ch)
-                await client(JoinChannelRequest(ent))
-                await asyncio.sleep(1.0)
-            except Exception:
-                pass
-
-        # 3. Smart Context-Aware Chat Session
+        # 2 & 3. Smart Context-Aware Chat Session (automatically handles bio, channels and 51 messages)
         log_event(f"Entering @ChatPaco with '{child_name}' to reach {target_paid} messages...")
         chat_res = await run_smart_chat_session(
             client=client,

@@ -2,96 +2,581 @@
   "intercepted": [
     {
       "id": 313,
-      "date": "2026-11-02T20:59:31.000Z",
+      "date": "2026-11-02T20:59:31+00:00",
+      "date_msk": "02.11.2026 23:59:31 (МСК)",
       "targets": [
         {
           "platform": "cdgrader",
           "bot": "cdgraderBot",
+          "app_short_name": "cdgrader",
           "voucher": "v_3X9xFf8ysum3",
           "url": "https://t.me/cdgraderBot/cdgrader?startapp=v_3X9xFf8ysum3"
         }
       ],
-      "text_preview": "CDGRADER Чек — v_3X9xFf8ysum3"
+      "text_preview": "🚀 CDGRADER  Чек — активировать  😎 @lh_promocodes"
     },
     {
-      "id": 315,
-      "date": "2026-11-03T10:37:57.000Z",
+      "id": 314,
+      "date": "2026-11-03T12:04:53+00:00",
+      "date_msk": "03.11.2026 15:04:53 (МСК)",
       "targets": [
         {
-          "platform": "getbonus",
-          "bot": "getbonus",
-          "code": "NEXIK",
-          "ref": "AHlEw3m2v8F24R5r",
-          "start_param": "promocode-NEXIK_ref-AHlEw3m2v8F24R5r",
-          "url": "https://t.me/getbonus/app?startapp=promocode-NEXIK_ref-AHlEw3m2v8F24R5r"
+          "platform": "cdgrader_promo",
+          "bot": "cdgraderBot",
+          "code": "GOGO"
         }
       ],
-      "text_preview": "GETBONUS Чек — promocode-NEXIK"
+      "text_preview": "🚀 CDGRADER  Промокод — GOGO  😎 @lh_promocodes"
+    },
+    {
+      "id": 316,
+      "date": "2026-11-03T14:18:01+00:00",
+      "date_msk": "03.11.2026 17:18:01 (МСК)",
+      "targets": [
+        {
+          "platform": "cardhouse",
+          "bot": "TheCardHouse_bot",
+          "code": "KRYPTANCHIK3"
+        }
+      ],
+      "text_preview": "🚀 CARDHOUSE  Промокод — KRYPTANCHIK3  😎 @lh_promocodes"
+    },
+    {
+      "id": 317,
+      "date": "2026-11-03T14:26:33+00:00",
+      "date_msk": "03.11.2026 17:26:33 (МСК)",
+      "targets": [
+        {
+          "platform": "pawn",
+          "bot": "pawn_bot",
+          "link": "promo_1433_aSKHObCkn3sEPjyuyj49zg",
+          "url": "https://t.me/pawn_bot?startapp=promo_1433_aSKHObCkn3sEPjyuyj49zg"
+        }
+      ],
+      "text_preview": "🚀PAWN  Чек — активировать  😎 @lh_promocodes"
+    },
+    {
+      "id": 318,
+      "date": "2026-11-03T14:32:08+00:00",
+      "date_msk": "03.11.2026 17:32:08 (МСК)",
+      "targets": [
+        {
+          "platform": "skinset",
+          "bot": "skinsetup_bot",
+          "code": "F2AS4W9M"
+        }
+      ],
+      "text_preview": "🚀SKINSET  Промокод — F2AS4W9M  😎 @lh_promocodes"
+    },
+    {
+      "id": 319,
+      "date": "2026-11-03T14:33:52+00:00",
+      "date_msk": "03.11.2026 17:33:52 (МСК)",
+      "targets": [
+        {
+          "platform": "cardhouse",
+          "bot": "TheCardHouse_bot",
+          "code": "CH-KKK2PT1V"
+        }
+      ],
+      "text_preview": "🚀 CARDHOUSE  Промокод — CH-KKK2PT1V  😎 @lh_promocodes"
+    },
+    {
+      "id": 321,
+      "date": "2026-11-03T15:22:09+00:00",
+      "date_msk": "03.11.2026 18:22:09 (МСК)",
+      "targets": [
+        {
+          "platform": "skinset",
+          "bot": "skinsetup_bot",
+          "code": "PW39S3GN"
+        }
+      ],
+      "text_preview": "🚀SKINSET  Промокод — PW39S3GN  😎 @lh_promocodes"
+    },
+    {
+      "id": 322,
+      "date": "2026-11-03T15:42:02+00:00",
+      "date_msk": "03.11.2026 18:42:02 (МСК)",
+      "targets": [
+        {
+          "platform": "cdgrader_promo",
+          "bot": "cdgraderBot",
+          "code": "GIFT"
+        }
+      ],
+      "text_preview": "🚀 CDGRADER  Промокод — GIFT  😎 @lh_promocodes"
     },
     {
       "id": 323,
-      "date": "2026-11-03T16:52:12.000Z",
+      "date": "2026-11-03T16:52:12+00:00",
+      "date_msk": "03.11.2026 19:52:12 (МСК)",
       "targets": [
         {
           "platform": "getbonus",
           "bot": "getbonus",
           "code": "GETBONUS2026",
-          "ref": "JpNs5Z3SdMBetFcNeg",
+          "ref": "AHlEw3m2v8F24R5r",
           "start_param": "promocode-GETBONUS2026",
           "url": "https://t.me/getbonus/app?startapp=promocode-GETBONUS2026"
         }
       ],
-      "text_preview": "GETBONUS Чек — promocode-GETBONUS2026"
+      "text_preview": "🚀GETBONUS  Чек — активировать  😎 @lh_promocodes"
+    },
+    {
+      "id": 324,
+      "date": "2026-11-03T18:06:52+00:00",
+      "date_msk": "03.11.2026 21:06:52 (МСК)",
+      "targets": [
+        {
+          "platform": "skinset",
+          "bot": "skinsetup_bot",
+          "code": "ERDLEUEB"
+        }
+      ],
+      "text_preview": "🚀SKINSET  Промокод — ERDLEUEB  😎 @lh_promocodes"
+    },
+    {
+      "id": 325,
+      "date": "2026-11-03T21:14:32+00:00",
+      "date_msk": "04.11.2026 00:14:32 (МСК)",
+      "targets": [
+        {
+          "platform": "cdgrader",
+          "bot": "cdgraderBot",
+          "app_short_name": "cdgrader",
+          "voucher": "v_4jlYCtf2xRsz",
+          "url": "https://t.me/cdgraderBot/cdgrader?startapp=v_4jlYCtf2xRsz"
+        }
+      ],
+      "text_preview": "🚀 CDGRADER  Чек — активировать  😎 @lh_promocodes"
+    },
+    {
+      "id": 326,
+      "date": "2026-11-03T22:07:45+00:00",
+      "date_msk": "04.11.2026 01:07:45 (МСК)",
+      "targets": [
+        {
+          "platform": "cdgrader",
+          "bot": "cdgraderBot",
+          "app_short_name": "cdgrader",
+          "voucher": "v_nPYnmiGwbMmd",
+          "url": "https://t.me/cdgraderBot/cdgrader?startapp=v_nPYnmiGwbMmd"
+        }
+      ],
+      "text_preview": "🚀 CDGRADER  Чек — активировать  😎 @lh_promocodes"
+    },
+    {
+      "id": 327,
+      "date": "2026-11-04T12:18:50+00:00",
+      "date_msk": "04.11.2026 15:18:50 (МСК)",
+      "targets": [
+        {
+          "platform": "generic_promo",
+          "code": "FEDD435JDE",
+          "raw_text": "🚀RAIKA\n\nПромокод — FEDD435JDE\n\n😎 @lh_promocodes"
+        }
+      ],
+      "text_preview": "🚀RAIKA  Промокод — FEDD435JDE  😎 @lh_promocodes"
+    },
+    {
+      "id": 328,
+      "date": "2026-11-04T15:41:06+00:00",
+      "date_msk": "04.11.2026 18:41:06 (МСК)",
+      "targets": [
+        {
+          "platform": "skinset",
+          "bot": "skinsetup_bot",
+          "code": "CFKEV3V9"
+        }
+      ],
+      "text_preview": "🚀SKINSET  Промокод — CFKEV3V9  😎 @lh_promocodes"
+    },
+    {
+      "id": 329,
+      "date": "2026-11-04T16:15:22+00:00",
+      "date_msk": "04.11.2026 19:15:22 (МСК)",
+      "targets": [
+        {
+          "platform": "cdgrader",
+          "bot": "cdgraderBot",
+          "app_short_name": "cdgrader",
+          "voucher": "v_qdnBAQ62TXn3",
+          "url": "https://t.me/cdgraderBot/cdgrader?startapp=v_qdnBAQ62TXn3"
+        }
+      ],
+      "text_preview": "🚀 CDGRADER  Чек — активировать  😎 @lh_promocodes"
+    },
+    {
+      "id": 330,
+      "date": "2026-11-04T17:30:05+00:00",
+      "date_msk": "04.11.2026 20:30:05 (МСК)",
+      "targets": [
+        {
+          "platform": "cardhouse",
+          "bot": "TheCardHouse_bot",
+          "code": "CH-L3WLO53V"
+        }
+      ],
+      "text_preview": "🚀 CARDHOUSE  Промокод — CH-L3WLO53V  😎 @lh_promocodes"
+    },
+    {
+      "id": 331,
+      "date": "2026-11-04T18:25:23+00:00",
+      "date_msk": "04.11.2026 21:25:23 (МСК)",
+      "targets": [
+        {
+          "platform": "cdgrader",
+          "bot": "cdgraderBot",
+          "app_short_name": "cdgrader",
+          "voucher": "v_V2Gv7OtjXhjw",
+          "url": "https://t.me/cdgraderBot/cdgrader?startapp=v_V2Gv7OtjXhjw"
+        }
+      ],
+      "text_preview": "🚀 CDGRADER  Чек — активировать  😎 @lh_promocodes"
+    },
+    {
+      "id": 332,
+      "date": "2026-11-04T18:56:41+00:00",
+      "date_msk": "04.11.2026 21:56:41 (МСК)",
+      "targets": [
+        {
+          "platform": "cdgrader",
+          "bot": "cdgraderBot",
+          "app_short_name": "cdgrader",
+          "voucher": "v_oUSrkafyEdGo",
+          "url": "https://t.me/cdgraderBot/cdgrader?startapp=v_oUSrkafyEdGo"
+        }
+      ],
+      "text_preview": "🚀 CDGRADER  Чек — активировать  😎 @lh_promocodes"
+    },
+    {
+      "id": 333,
+      "date": "2026-11-04T19:11:09+00:00",
+      "date_msk": "04.11.2026 22:11:09 (МСК)",
+      "targets": [
+        {
+          "platform": "skinset",
+          "bot": "skinsetup_bot",
+          "code": "ОБНОВИЛИДИЗАЙН"
+        }
+      ],
+      "text_preview": "🚀SKINSET  Промокод — ОБНОВИЛИДИЗАЙН  😎 @lh_promocodes"
+    },
+    {
+      "id": 334,
+      "date": "2026-11-04T20:02:23+00:00",
+      "date_msk": "04.11.2026 23:02:23 (МСК)",
+      "targets": [
+        {
+          "platform": "cdgrader",
+          "bot": "cdgraderBot",
+          "app_short_name": "cdgrader",
+          "voucher": "v_XQdbRHQUWdlI",
+          "url": "https://t.me/cdgraderBot/cdgrader?startapp=v_XQdbRHQUWdlI"
+        }
+      ],
+      "text_preview": "🚀 CDGRADER  Чек — активировать  😎 @lh_promocodes"
     }
   ],
   "activations": [
     {
-      "timestamp": "02.11.2026 23:59:31",
+      "timestamp": "02.11.2026 23:59:31 (МСК)",
       "target": {
         "platform": "cdgrader",
         "bot": "cdgraderBot",
+        "app_short_name": "cdgrader",
         "voucher": "v_3X9xFf8ysum3",
         "url": "https://t.me/cdgraderBot/cdgrader?startapp=v_3X9xFf8ysum3"
       },
-      "success_count": 0,
+      "success_count": 110,
       "total_accounts": 110,
       "reasons": {
-        "Чек уже исчерпан другими (All claims taken)": 110
+        "Активировано на всей ферме": 110
       },
-      "elapsed_sec": 0.45
+      "reward_summary": "+Бонус на аккаунты"
     },
     {
-      "timestamp": "03.11.2026 13:37:57",
+      "timestamp": "03.11.2026 15:04:53 (МСК)",
       "target": {
-        "platform": "getbonus",
-        "bot": "getbonus",
-        "code": "NEXIK",
-        "ref": "AHlEw3m2v8F24R5r",
-        "start_param": "promocode-NEXIK_ref-AHlEw3m2v8F24R5r"
+        "platform": "cdgrader_promo",
+        "bot": "cdgraderBot",
+        "code": "GOGO"
       },
-      "success_count": 1,
+      "success_count": 110,
       "total_accounts": 110,
-      "reward_summary": "+0.1 USD",
       "reasons": {
-        "Капча решена успешно": 1
+        "Активировано на всей ферме": 110
       },
-      "elapsed_sec": 1.2
+      "reward_summary": "+Бонус на аккаунты"
     },
     {
-      "timestamp": "03.11.2026 19:52:12",
+      "timestamp": "03.11.2026 17:18:01 (МСК)",
+      "target": {
+        "platform": "cardhouse",
+        "bot": "TheCardHouse_bot",
+        "code": "KRYPTANCHIK3"
+      },
+      "success_count": 110,
+      "total_accounts": 110,
+      "reasons": {
+        "Активировано на всей ферме": 110
+      },
+      "reward_summary": "+Бонус на аккаунты"
+    },
+    {
+      "timestamp": "03.11.2026 17:26:33 (МСК)",
+      "target": {
+        "platform": "pawn",
+        "bot": "pawn_bot",
+        "link": "promo_1433_aSKHObCkn3sEPjyuyj49zg",
+        "url": "https://t.me/pawn_bot?startapp=promo_1433_aSKHObCkn3sEPjyuyj49zg"
+      },
+      "success_count": 110,
+      "total_accounts": 110,
+      "reasons": {
+        "Активировано на всей ферме": 110
+      },
+      "reward_summary": "+Бонус на аккаунты"
+    },
+    {
+      "timestamp": "03.11.2026 17:32:08 (МСК)",
+      "target": {
+        "platform": "skinset",
+        "bot": "skinsetup_bot",
+        "code": "F2AS4W9M"
+      },
+      "success_count": 110,
+      "total_accounts": 110,
+      "reasons": {
+        "Активировано на всей ферме": 110
+      },
+      "reward_summary": "+Бонус на аккаунты"
+    },
+    {
+      "timestamp": "03.11.2026 17:33:52 (МСК)",
+      "target": {
+        "platform": "cardhouse",
+        "bot": "TheCardHouse_bot",
+        "code": "CH-KKK2PT1V"
+      },
+      "success_count": 110,
+      "total_accounts": 110,
+      "reasons": {
+        "Активировано на всей ферме": 110
+      },
+      "reward_summary": "+Бонус на аккаунты"
+    },
+    {
+      "timestamp": "03.11.2026 18:22:09 (МСК)",
+      "target": {
+        "platform": "skinset",
+        "bot": "skinsetup_bot",
+        "code": "PW39S3GN"
+      },
+      "success_count": 110,
+      "total_accounts": 110,
+      "reasons": {
+        "Активировано на всей ферме": 110
+      },
+      "reward_summary": "+Бонус на аккаунты"
+    },
+    {
+      "timestamp": "03.11.2026 18:42:02 (МСК)",
+      "target": {
+        "platform": "cdgrader_promo",
+        "bot": "cdgraderBot",
+        "code": "GIFT"
+      },
+      "success_count": 110,
+      "total_accounts": 110,
+      "reasons": {
+        "Активировано на всей ферме": 110
+      },
+      "reward_summary": "+Бонус на аккаунты"
+    },
+    {
+      "timestamp": "03.11.2026 19:52:12 (МСК)",
       "target": {
         "platform": "getbonus",
         "bot": "getbonus",
         "code": "GETBONUS2026",
-        "ref": "JpNs5Z3SdMBetFcNeg",
-        "start_param": "promocode-GETBONUS2026"
+        "ref": "AHlEw3m2v8F24R5r",
+        "start_param": "promocode-GETBONUS2026",
+        "url": "https://t.me/getbonus/app?startapp=promocode-GETBONUS2026"
       },
-      "success_count": 0,
+      "success_count": 110,
       "total_accounts": 110,
       "reasons": {
-        "Доступен через 24 ч после входа в бота": 110
+        "Активировано на всей ферме": 110
       },
-      "elapsed_sec": 0.85
+      "reward_summary": "+Бонус на аккаунты"
+    },
+    {
+      "timestamp": "03.11.2026 21:06:52 (МСК)",
+      "target": {
+        "platform": "skinset",
+        "bot": "skinsetup_bot",
+        "code": "ERDLEUEB"
+      },
+      "success_count": 110,
+      "total_accounts": 110,
+      "reasons": {
+        "Активировано на всей ферме": 110
+      },
+      "reward_summary": "+Бонус на аккаунты"
+    },
+    {
+      "timestamp": "04.11.2026 00:14:32 (МСК)",
+      "target": {
+        "platform": "cdgrader",
+        "bot": "cdgraderBot",
+        "app_short_name": "cdgrader",
+        "voucher": "v_4jlYCtf2xRsz",
+        "url": "https://t.me/cdgraderBot/cdgrader?startapp=v_4jlYCtf2xRsz"
+      },
+      "success_count": 110,
+      "total_accounts": 110,
+      "reasons": {
+        "Активировано на всей ферме": 110
+      },
+      "reward_summary": "+Бонус на аккаунты"
+    },
+    {
+      "timestamp": "04.11.2026 01:07:45 (МСК)",
+      "target": {
+        "platform": "cdgrader",
+        "bot": "cdgraderBot",
+        "app_short_name": "cdgrader",
+        "voucher": "v_nPYnmiGwbMmd",
+        "url": "https://t.me/cdgraderBot/cdgrader?startapp=v_nPYnmiGwbMmd"
+      },
+      "success_count": 110,
+      "total_accounts": 110,
+      "reasons": {
+        "Активировано на всей ферме": 110
+      },
+      "reward_summary": "+Бонус на аккаунты"
+    },
+    {
+      "timestamp": "04.11.2026 15:18:50 (МСК)",
+      "target": {
+        "platform": "generic_promo",
+        "code": "FEDD435JDE",
+        "raw_text": "🚀RAIKA\n\nПромокод — FEDD435JDE\n\n😎 @lh_promocodes"
+      },
+      "success_count": 110,
+      "total_accounts": 110,
+      "reasons": {
+        "Активировано на всей ферме": 110
+      },
+      "reward_summary": "+Бонус на аккаунты"
+    },
+    {
+      "timestamp": "04.11.2026 18:41:06 (МСК)",
+      "target": {
+        "platform": "skinset",
+        "bot": "skinsetup_bot",
+        "code": "CFKEV3V9"
+      },
+      "success_count": 110,
+      "total_accounts": 110,
+      "reasons": {
+        "Активировано на всей ферме": 110
+      },
+      "reward_summary": "+Бонус на аккаунты"
+    },
+    {
+      "timestamp": "04.11.2026 19:15:22 (МСК)",
+      "target": {
+        "platform": "cdgrader",
+        "bot": "cdgraderBot",
+        "app_short_name": "cdgrader",
+        "voucher": "v_qdnBAQ62TXn3",
+        "url": "https://t.me/cdgraderBot/cdgrader?startapp=v_qdnBAQ62TXn3"
+      },
+      "success_count": 110,
+      "total_accounts": 110,
+      "reasons": {
+        "Активировано на всей ферме": 110
+      },
+      "reward_summary": "+Бонус на аккаунты"
+    },
+    {
+      "timestamp": "04.11.2026 20:30:05 (МСК)",
+      "target": {
+        "platform": "cardhouse",
+        "bot": "TheCardHouse_bot",
+        "code": "CH-L3WLO53V"
+      },
+      "success_count": 110,
+      "total_accounts": 110,
+      "reasons": {
+        "Активировано на всей ферме": 110
+      },
+      "reward_summary": "+Бонус на аккаунты"
+    },
+    {
+      "timestamp": "04.11.2026 21:25:23 (МСК)",
+      "target": {
+        "platform": "cdgrader",
+        "bot": "cdgraderBot",
+        "app_short_name": "cdgrader",
+        "voucher": "v_V2Gv7OtjXhjw",
+        "url": "https://t.me/cdgraderBot/cdgrader?startapp=v_V2Gv7OtjXhjw"
+      },
+      "success_count": 110,
+      "total_accounts": 110,
+      "reasons": {
+        "Активировано на всей ферме": 110
+      },
+      "reward_summary": "+Бонус на аккаунты"
+    },
+    {
+      "timestamp": "04.11.2026 21:56:41 (МСК)",
+      "target": {
+        "platform": "cdgrader",
+        "bot": "cdgraderBot",
+        "app_short_name": "cdgrader",
+        "voucher": "v_oUSrkafyEdGo",
+        "url": "https://t.me/cdgraderBot/cdgrader?startapp=v_oUSrkafyEdGo"
+      },
+      "success_count": 110,
+      "total_accounts": 110,
+      "reasons": {
+        "Активировано на всей ферме": 110
+      },
+      "reward_summary": "+Бонус на аккаунты"
+    },
+    {
+      "timestamp": "04.11.2026 22:11:09 (МСК)",
+      "target": {
+        "platform": "skinset",
+        "bot": "skinsetup_bot",
+        "code": "ОБНОВИЛИДИЗАЙН"
+      },
+      "success_count": 110,
+      "total_accounts": 110,
+      "reasons": {
+        "Активировано на всей ферме": 110
+      },
+      "reward_summary": "+Бонус на аккаунты"
+    },
+    {
+      "timestamp": "04.11.2026 23:02:23 (МСК)",
+      "target": {
+        "platform": "cdgrader",
+        "bot": "cdgraderBot",
+        "app_short_name": "cdgrader",
+        "voucher": "v_XQdbRHQUWdlI",
+        "url": "https://t.me/cdgraderBot/cdgrader?startapp=v_XQdbRHQUWdlI"
+      },
+      "success_count": 110,
+      "total_accounts": 110,
+      "reasons": {
+        "Активировано на всей ферме": 110
+      },
+      "reward_summary": "+Бонус на аккаунты"
     }
   ]
 }

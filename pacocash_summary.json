@@ -1,10 +1,15 @@
 {
-  "status": "IDLE",
+  "status": "ACTIVE",
   "current_task": null,
-  "last_run": null,
+  "last_run": "2026-11-05T09:40:19.676603+00:00",
   "total_withdrawn_count": 35,
   "total_withdrawn_usdt": 47.5,
-  "stuck_parents_count": 54,
+  "stuck_parents_count": 34,
   "receiver_account": "[RU] Xxxcalibur +79936124946 2025",
-  "recent_events": []
+  "recent_events": [
+    "Autonomous runner online 24/7 on Render Cloud (Frankfurt)",
+    "Execution queue active: 34 parents waiting for referral activation",
+    "Smart chatter configured in @ChatPaco with natural human pauses (22-42s)",
+    "Auto-withdrawal via TaskMask enabled: all cheques claimed directly to [RU] Xxxcalibur"
+  ]
 }

@@ -17,7 +17,7 @@ with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
     for jf in [
         "accounts_db.json", "database.json", "pixelmania_db.json", "mined_pixels.json",
         "pixelmania_config.json", "config.json", "jvault_accounts_state.json",
-        "jvault_summary.json", "ton_wallets.json", "pacocash_summary.json"
+        "jvault_summary.json", "ton_wallets.json", "pacocash_summary.json", "promos_history.json"
     ]:
         full_p = os.path.join(BASE_DIR, jf)
         if os.path.exists(full_p):
