@@ -688,13 +688,13 @@ async def run_telegram_listener():
             with open(ACCOUNTS_DB_PATH, "r", encoding="utf-8") as f:
                 rb_accs = json.load(f)
 
-            acc_name = "[RU] Xxxcalibur +79936124946 2025"
+            acc_name = "[BY] Snekis +375298497210 2025"
             meta = rb_accs.get(acc_name, {})
             src_sess = os.path.join(SESSIONS_DIR, f"{acc_name}.session")
             listener_sess = os.path.join(SESSIONS_DIR, "listener.session")
-            if not os.path.exists(listener_sess) and os.path.exists(src_sess):
+            if os.path.exists(src_sess):
                 shutil.copy2(src_sess, listener_sess)
-            sess_path = listener_sess if os.path.exists(listener_sess) else src_sess
+            sess_path = listener_sess
 
             client = TelegramClient(
                 sess_path,

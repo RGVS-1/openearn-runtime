@@ -181,7 +181,7 @@ async def run_loop(max_rounds: int = 1):
 
     target_accounts = [
         acc for acc in rb_accs 
-        if acc != "[KZ] Tamosyaaaaaa +77052241850 2026"
+        if acc not in ["[KZ] Tamosyaaaaaa +77052241850 2026", "[BY] Snekis +375298497210 2025"]
     ]
 
     logger.info(f"⚡ Tapper Loop: Starting cycle for {len(target_accounts)} accounts...")

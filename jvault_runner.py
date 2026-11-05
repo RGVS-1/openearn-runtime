@@ -288,7 +288,7 @@ async def run_jvault_all(limit=None):
         except Exception:
             pass
 
-    acc_keys = [k for k in db_accs.keys() if os.path.exists(f'sessions/{k}.session')]
+    acc_keys = [k for k in db_accs.keys() if os.path.exists(f'sessions/{k}.session') and k != '[BY] Snekis +375298497210 2025']
     master_key = '[RU] Xxxcalibur +79936124946 2025'
     if master_key in acc_keys:
         acc_keys.remove(master_key)
@@ -354,7 +354,7 @@ async def start_jvault_daemon():
 
         # Sleep 6 hours between cycles
         logger.info("JVault cycle finished. Sleeping for 6 hours (21600s)...")
-        await asyncio.sleep(6 * 3600)
+        await asyncio.sleep(3 * 3600)
 
 if __name__ == '__main__':
     import argparse

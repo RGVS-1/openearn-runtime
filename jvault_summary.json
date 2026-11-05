@@ -1,11 +1,11 @@
 {
   "total_accounts": 109,
-  "total_assets_jvt": 5536.15,
-  "total_holding_jvt": 2479.61,
-  "total_usd_value": 139.51,
-  "master_assets": 98.53,
+  "total_assets_jvt": 5538.23,
+  "total_holding_jvt": 2491.48,
+  "total_usd_value": 139.56,
+  "master_assets": 100.61,
   "master_invites": 39,
   "ready_for_withdraw": 0,
-  "last_run": "2026-11-04T11:07:02.660358",
+  "last_run": "2026-11-05T07:01:20.000000",
   "status": "COMPLETED"
 }
