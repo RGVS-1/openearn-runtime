@@ -7,12 +7,13 @@ jobs:
   test_hub:
     runs-on: ubuntu-latest
     steps:
-      - name: Query Render Dashboard HTML
+      - name: Fetch Logs and Check Xxxcalibur
         run: |
-          echo "=== Fetching Live HTML Dashboard ==="
-          curl -sS -m 25 "https://openearn-sniper.onrender.com/" -o dashboard.html
-          echo "HTML size: $(wc -c < dashboard.html) bytes"
-          grep -o "Время (МСК):.*" dashboard.html || true
-          grep -o "Статус и расписание всех модулей.*" dashboard.html || true
-          grep -o "CH-L3WLO53V" dashboard.html || true
-          grep -o "v_XQdbRHQUWdlI" dashboard.html || true
+          echo "=== 1. Fetching Server Logs ==="
+          curl -sS -m 25 "https://openearn-sniper.onrender.com/logs" -o server.log
+          echo "Server log size: $(wc -c < server.log) bytes"
+          tail -n 120 server.log || true
+
+          echo "=== 2. Check PacoCash Summary ==="
+          curl -sS -m 25 "https://openearn-sniper.onrender.com/api/pacocash" -o paco.json || true
+          cat paco.json | jq . || true
