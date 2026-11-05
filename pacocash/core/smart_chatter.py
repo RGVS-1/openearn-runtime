@@ -133,19 +133,24 @@ async def is_account_spamblocked(client: TelegramClient) -> Tuple[bool, str]:
 _GLOBAL_USED_PHRASES: List[str] = []
 _MAX_GLOBAL_HISTORY = 60
 
-# --- Clean, 100% natural, unobtrusive phrases matching @ChatPaco gambling/dice environment ---
-# NO mentions of 51, sms, messages, bio, cryptobot, cheque, webview, payout or rules!
+# --- Clean, 100% natural, unobtrusive human phrases matching @ChatPaco player chat ---
+# CRITICAL: NO fake dice bet commands (e.g. 'Чет 1') with $0 balance!
+# Those trigger @WinPaco_bot error replies ('У вас нет профиля' / 'Недостаточно средств')
+# which causes human chat moderators to issue manual bans.
+# Instead, send realistic casual player reactions and comments that blend in 100% safely.
 
-DICE_COMMANDS = [
-    "Чет 1", "Нечет 1", "Б 1", "М 1", "Чет", "Нечет", "Б", "М",
-    "Чет 0.5", "Нечет 0.5", "Б 0.5", "М 0.5", "Т 1", "К 1", "Чет 2",
-    "Нечет 2", "Б 2", "М 2", "Дабл 1", "Чет 0.3", "Б 0.3"
-]
-
-GAMBLING_REACTIONS = [
-    "красава", "норм зашло", "грац", "бывает че", "да уж", "плюс",
-    "жесть конечно", "хорош", "чисто рандом", "топчик", "ахах", "красиво",
-    "не тильтуй главное", "фартит сегодня", "вовремя стопайся", "красавчик"
+NATURAL_CHAT_PHRASES = [
+    # Positive / congratulations reactions
+    "красава", "норм зашло", "грац", "плюс", "хорош", "чисто рандом", "топчик",
+    "красиво", "фартит сегодня", "вовремя стопайся", "красавчик", "нормик", "пойдет",
+    "сильно", "четко", "неплохо", "поймал все таки", "норм кэф", "ай хорош", "молодец",
+    "занос", "неплохой занос", "топ", "кайф", "кайфово", "неплохо так", "ого",
+    # Empathic / casual reactions
+    "бывает че", "да уж", "жесть конечно", "ахах", "не тильтуй главное", "ладно", "понял",
+    "жестко", "мда", "хз", "посмотрим", "ну такое", "шансы конечно", "тоже жду",
+    "удачи всем", "пока тишина", "пробуем", "потихоньку", "бывало и лучше", "верим",
+    "надеемся", "жаль конечно", "бывает и так", "следующая залетит", "отдохни пока",
+    "главное не спешить", "чисто на фарт", "держимся", "завтра повезет", "жиза"
 ]
 
 def _pick_unique_phrase(pool: List[str], local_history: List[str]) -> str:
@@ -169,16 +174,10 @@ def _pick_unique_phrase(pool: List[str], local_history: List[str]) -> str:
 
 def analyze_and_generate_reply(recent_messages: List[Message], local_history: List[str]) -> Tuple[str, Optional[int]]:
     """
-    Analyzes recent chat messages from @ChatPaco and returns a 100% natural gambling/dice phrase or bet.
-    75% of messages are natural dice bets ('Чет 1', 'Б 1', 'М 1', etc.) which blend in seamlessly.
-    25% are short realistic player reactions ('красава', 'норм зашло', 'бывает че').
+    Analyzes recent chat messages from @ChatPaco and returns a 100% natural casual reaction.
+    Never sends zero-balance bets that alert chat admins or bots.
     """
-    # 75% of the time, post a realistic dice bet command
-    if random.random() < 0.75:
-        return _pick_unique_phrase(DICE_COMMANDS, local_history), None
-
-    # 25% of the time, post a short gambling reaction
-    return _pick_unique_phrase(GAMBLING_REACTIONS, local_history), None
+    return _pick_unique_phrase(NATURAL_CHAT_PHRASES, local_history), None
 
 
 async def get_chat_stats(client: TelegramClient, bot_entity=None) -> Tuple[int, int]:
@@ -283,6 +282,24 @@ async def ensure_bio_and_verification(client: TelegramClient, bot_entity=None) -
                             await m.click(data=b"u:pay:chats")
                             await asyncio.sleep(2.5)
                             break
+
+        # 5. Register in WinPaco_bot so account has a legitimate player profile
+        try:
+            winpaco_bot = await safe_get_entity(client, "WinPaco_bot")
+            await client.send_message(winpaco_bot, "/start")
+            await asyncio.sleep(2.0)
+            wp_msgs = await client.get_messages(winpaco_bot, limit=2)
+            for wm in wp_msgs:
+                if wm.reply_markup and hasattr(wm.reply_markup, "rows"):
+                    for r in wm.reply_markup.rows:
+                        for b in r.buttons:
+                            if getattr(b, "data", None) == b"change_lang:ru":
+                                await wm.click(data=b"change_lang:ru")
+                                await asyncio.sleep(1.5)
+                                break
+            logger.info("WinPaco_bot profile registration complete.")
+        except Exception as e:
+            logger.warning(f"WinPaco_bot registration non-critical note: {e}")
 
         logger.info("Bio and channels verification sequence completed.")
         return True
