@@ -370,6 +370,9 @@ async def execute_task(task: dict, cfg: dict, accounts_db: dict) -> bool:
         await client.connect()
         if not await client.is_user_authorized():
             log_event(f"Error: Child {child_name} is unauthorized")
+            db = load_paco_db()
+            db[child_name] = {"status": "UNAUTHORIZED", "error": "Session unauthorized"}
+            save_paco_db(db)
             return False
 
         # 1. Onboard if clean
@@ -414,6 +417,9 @@ async def execute_task(task: dict, cfg: dict, accounts_db: dict) -> bool:
 
         if not chat_res.get("ok"):
             log_event(f"Chat session did not achieve goal for '{child_name}': {chat_res.get('error')}")
+            db = load_paco_db()
+            db[child_name] = {"status": "RESTRICTED", "error": str(chat_res.get('error'))}
+            save_paco_db(db)
             return False
 
         log_event(f"Child '{child_name}' reached 51 paid messages! Qualifying referral complete.")
@@ -486,8 +492,8 @@ async def start_pacocash_daemon():
             tasks = build_execution_plan()
             if tasks:
                 log_event(f"PacoCash daemon found {len(tasks)} queued tasks. Launching batch...")
-                # Run batch of 2 tasks per daemon iteration to avoid holding event loop too long
-                await run_pacocash_cycle(max_tasks=2)
+                # Test single task first as requested
+                await run_pacocash_cycle(max_tasks=1)
             else:
                 log_event("PacoCash daemon: All accounts processed and withdrawn. Idle.")
         except Exception as e:

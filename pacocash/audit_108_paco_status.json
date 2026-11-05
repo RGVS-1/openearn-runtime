@@ -651,10 +651,7 @@
   ],
   "never_participated": [
     "[KZ] . +77477169455 2020",
-    "[KZ] 6767 +77787029173 2025",
     "[KZ] Air  +77779955277 2024",
-    "[KZ] Alshinbai +77471303859 2023",
-    "[KZ] Dina Maratkyzy +77750411804 2020",
     "[KZ] George Reed +77072438607 2026",
     "[KZ] Khussein +77051220056 2020",
     "[KZ] Koilan Tamasha +77784932618 2025",
@@ -677,5 +674,10 @@
     "[UZ] Mr Wright +998701355552 2026",
     "[UZ] Sean  +998777971062 2026",
     "[UZ] Sharon +998779442358 2026"
+  ],
+  "problematic_or_banned": [
+    "[KZ] 6767 +77787029173 2025",
+    "[KZ] Alshinbai +77471303859 2023",
+    "[KZ] Dina Maratkyzy +77750411804 2020"
   ]
 }

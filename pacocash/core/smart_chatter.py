@@ -1,20 +1,3 @@
-async def safe_get_entity(client: TelegramClient, entity_name: str):
-    try:
-        from telethon.tl.functions.contacts import ResolveUsernameRequest
-        clean = entity_name.lstrip('@')
-        resolved = await client(ResolveUsernameRequest(clean))
-        if resolved.chats:
-            return resolved.chats[0]
-        if resolved.users:
-            return resolved.users[0]
-    except Exception:
-        pass
-    try:
-        return await client.get_entity(entity_name)
-    except Exception as e:
-        logger.warning(f"safe_get_entity {entity_name}: {e}")
-        return entity_name
-
 import asyncio
 import logging
 import random
@@ -37,16 +20,33 @@ REQUIRED_BIO = "@winpaco — free case every day!"
 TARGET_CHAT = "ChatPaco"
 REQUIRED_CHANNELS = ["chatpaco", "pacocartel", "WinPacoLive", "w1paco", "inona4ka"]
 
-# Global history to prevent repetition across any accounts
+async def safe_get_entity(client: TelegramClient, entity_name: str):
+    try:
+        from telethon.tl.functions.contacts import ResolveUsernameRequest
+        clean = entity_name.lstrip('@')
+        resolved = await client(ResolveUsernameRequest(clean))
+        if resolved.chats:
+            return resolved.chats[0]
+        if resolved.users:
+            return resolved.users[0]
+    except Exception:
+        pass
+    try:
+        return await client.get_entity(entity_name)
+    except Exception as e:
+        logger.warning(f"safe_get_entity {entity_name}: {e}")
+        return entity_name
+
+# Global history to prevent repetition across accounts
 _GLOBAL_USED_PHRASES: List[str] = []
 _MAX_GLOBAL_HISTORY = 60
 
-# --- Comprehensive bank of natural Russian conversational phrases ---
+# --- Clean, 100% natural, unobtrusive phrases matching @ChatPaco gambling/dice environment ---
+# NO mentions of 51, sms, messages, bio, cryptobot, cheque, webview, payout or rules!
 
-# 1. Reactions to dice games / duels / wins in WinPaco
 REACTIONS_TO_WIN = [
     "красава, грац", "норм поднял", "хорош", "тащит сегодня прям",
-    "плюс балик, поздравляю", "красиво сыграно", "фартит", "мощно",
+    "поздравляю", "красиво сыграно", "фартит", "мощно",
     "грац", "чисто на опыте", "красавчик", "вот это фарт",
     "вовремя стопайся только", "хороший куш", "грац с победой",
     "на тоненького зашло", "жестко затащил", "топчик"
@@ -59,47 +59,25 @@ REACTIONS_TO_LOSS = [
     "на костях чисто рандом", "ну такое конечно", "аккуратнее со ставками"
 ]
 
-# 2. Reactions to bonus / WinPaco bot commands
 REACTIONS_TO_BONUS = [
-    "тоже бонус забрал", "у меня еще кд висит", "раз в два часа же вроде?",
-    "спс что напомнил, ща чекну", "забыл совсем про бонус", "пако щедрый сегодня",
+    "Бонус", "бонус", "тоже бонус забрал", "у меня еще кд висит",
+    "спс что напомнил, ща чекну", "забыл совсем про бонус",
     "у меня через час только откатит", "кд быстро летит", "надо тоже забрать пойти",
-    "каждые 2 часа стабильно лутаю", "бонус мелочь а приятно"
+    "бонус мелочь а приятно"
 ]
 
-# 3. Answers to common questions (cashout, rules, 51 msgs, cryptobot)
-ANSWERS_PAYOUT = [
-    "на криптобот чеком выводят", "от 1 бакса вроде вывод", "минуты 2-3 и чек в боте",
-    "моментально почти приходит", "пако стабильно платит, проверено",
-    "через вебвью верификацию проходишь и чек дают", "вчера выводил, все четко"
-]
-
-ANSWERS_GOAL_51 = [
-    "51 смс надо для розыгрыша набить", "до 21:00 по мск итоги вроде",
-    "потихоньку набивается если общаться", "в био обязательно приписку надо ставить",
-    "половину уже набил где-то", "главное чтоб зачли в розыгрыш",
-    "каждый день десятку разыгрывают", "надеюсь сегодня повезет в десятку попасть"
-]
-
-ANSWERS_GENERIC_Q = [
-    "хз если честно", "не уверен, надо в правилах глянуть", "вроде да",
-    "да так и есть", "не знаю даже", "наверное", "в закрепе должно быть написано",
-    "по факту", "плюсую"
-]
-
-# 4. Casual banter, thoughts, and conversational glue
 CASUAL_BANTER = [
-    "ку всем кто в чате", "всем доброго времени", "как успехи у народа?",
-    "живой чат сегодня прям", "вечер в хату", "посмотрим что на розыгрыше будет",
-    "всем удачи сегодня", "фарта мужики", "главное без азарта жесткого",
+    "Бонус", "бонус", "ку всем кто в чате", "всем доброго времени", "как успехи у народа?",
+    "живой чат сегодня прям", "всем удачи сегодня", "фарта мужики", "главное без азарта жесткого",
     "чисто на расслабоне сижу", "да уж", "согласен полностью", "жиза",
     "было такое", "ну да", "посмотрим как пойдет", "по тихой общаемся",
     "нормально так", "все на месте", "плюс", "да", "ну как сказать",
     "время покажет", "поглядим", "движ идет", "норм тема",
     "всем зеленых свечей", "надеюсь сегодня повезет", "день неплохой сегодня",
     "главное не спешить", "в кости чисто по фану катать надо",
-    "тоже тут сижу", "всем профита", "увидимся на итогах",
-    "активчик хороший", "потихоньку двигаемся", "красота"
+    "тоже тут сижу", "всем профита", "активчик хороший", "потихоньку двигаемся",
+    "красота", "погнали", "го", "плюсую", "по факту", "удачи всем",
+    "сегодня хороший день", "норм", "хорош", "фарту масти"
 ]
 
 def _pick_unique_phrase(pool: List[str], local_history: List[str]) -> str:
@@ -123,66 +101,29 @@ def _pick_unique_phrase(pool: List[str], local_history: List[str]) -> str:
 
 def analyze_and_generate_reply(recent_messages: List[Message], local_history: List[str]) -> Tuple[str, Optional[int]]:
     """
-    Analyzes recent chat messages from @ChatPaco and returns:
-    (message_text, optional_reply_to_msg_id)
+    Analyzes recent chat messages from @ChatPaco and returns a natural phrase.
+    NEVER replies with reply_to (always sends to general chat flow to prevent awkward replies).
     """
     if not recent_messages:
         return _pick_unique_phrase(CASUAL_BANTER, local_history), None
 
-    last_msg = recent_messages[0]
-    last_text = (last_msg.text or "").strip()
-    last_text_lower = last_text.lower()
-
-    # 1. Check if the latest message was a game outcome from WinPaco
-    for m in recent_messages[:3]:
-        t = (m.text or "").lower()
-        if "победитель:" in t or "результаты #" in t:
-            if "выигрыш:" in t or "победитель" in t:
-                # React to victory
-                phrase = _pick_unique_phrase(REACTIONS_TO_WIN, local_history)
-                return phrase, None
-        elif "проиграл" in t or "поражение" in t:
-            phrase = _pick_unique_phrase(REACTIONS_TO_LOSS, local_history)
-            return phrase, None
-
-    # 2. Check if users are talking about Bonus
+    # Check recent messages for context
     for m in recent_messages[:4]:
         t = (m.text or "").lower()
-        if "бонус" in t or "кд" in t or "таймаут" in t:
-            phrase = _pick_unique_phrase(REACTIONS_TO_BONUS, local_history)
-            return phrase, None
-
-    # 3. Check if someone asked a question in the last 2 messages
-    if "?" in last_text or last_text_lower.startswith(("как ", "где ", "кто ", "сколько ", "когда ")):
-        # Ignore if bot was asking
-        sender = getattr(last_msg, "sender", None)
-        sender_username = getattr(sender, "username", "") or ""
-        if "bot" not in sender_username.lower():
-            if any(k in last_text_lower for k in ["вывод", "криптобот", "чек", "бакс", "деньги", "вывести"]):
-                phrase = _pick_unique_phrase(ANSWERS_PAYOUT, local_history)
-                return phrase, last_msg.id if random.random() < 0.6 else None
-            elif any(k in last_text_lower for k in ["51", "смс", "сообщени", "розыгрыш", "био", "приписк"]):
-                phrase = _pick_unique_phrase(ANSWERS_GOAL_51, local_history)
-                return phrase, last_msg.id if random.random() < 0.6 else None
-            else:
-                phrase = _pick_unique_phrase(ANSWERS_GENERIC_Q, local_history)
-                return phrase, last_msg.id if random.random() < 0.4 else None
-
-    # 4. Check for dice / gambling discussion
-    for m in recent_messages[:3]:
-        t = (m.text or "").lower()
-        if any(k in t for k in ["куб", "кости", "дуэль", "ставка", "банк", "х2", "слил", "поднял"]):
+        if "победитель:" in t or "результаты #" in t or "выигрыш:" in t:
+            return _pick_unique_phrase(REACTIONS_TO_WIN, local_history), None
+        elif "проиграл" in t or "поражение" in t:
+            return _pick_unique_phrase(REACTIONS_TO_LOSS, local_history), None
+        elif "бонус" in t or "кд" in t:
+            return _pick_unique_phrase(REACTIONS_TO_BONUS, local_history), None
+        elif any(k in t for k in ["куб", "кости", "дуэль", "ставка", "банк", "х2"]):
             if any(k in t for k in ["поднял", "занес", "выиграл", "плюс"]):
-                phrase = _pick_unique_phrase(REACTIONS_TO_WIN, local_history)
+                return _pick_unique_phrase(REACTIONS_TO_WIN, local_history), None
             elif any(k in t for k in ["слил", "минус", "проиграл", "ноль"]):
-                phrase = _pick_unique_phrase(REACTIONS_TO_LOSS, local_history)
-            else:
-                phrase = _pick_unique_phrase(CASUAL_BANTER, local_history)
-            return phrase, None
+                return _pick_unique_phrase(REACTIONS_TO_LOSS, local_history), None
 
-    # 5. Default natural Russian casual banter
-    phrase = _pick_unique_phrase(CASUAL_BANTER, local_history)
-    return phrase, None
+    # Default natural Russian casual gambling banter
+    return _pick_unique_phrase(CASUAL_BANTER, local_history), None
 
 
 async def get_chat_stats(client: TelegramClient, bot_entity=None) -> Tuple[int, int]:
@@ -198,7 +139,7 @@ async def get_chat_stats(client: TelegramClient, bot_entity=None) -> Tuple[int, 
                     for b in r.buttons:
                         if getattr(b, "data", None) == b"u:pay:home":
                             await m.click(data=b"u:pay:home")
-                            await asyncio.sleep(2.2)
+                            await asyncio.sleep(2.5)
                             refreshed = await client.get_messages(bot, ids=m.id)
                             recv = 0
                             paid = 0
@@ -217,50 +158,80 @@ async def get_chat_stats(client: TelegramClient, bot_entity=None) -> Tuple[int, 
     return 0, 0
 
 
+async def ensure_joined_channels(client: TelegramClient):
+    """Joins ChatPaco and partner channels before bot verification."""
+    for ch in REQUIRED_CHANNELS:
+        try:
+            ent = await safe_get_entity(client, ch)
+            await client(JoinChannelRequest(ent))
+            await asyncio.sleep(1.8)
+        except Exception as e:
+            logger.debug(f"Join channel {ch}: {e}")
+
+
 async def ensure_bio_and_verification(client: TelegramClient, bot_entity=None) -> bool:
-    """Ensures account has the required bio and is verified in PacoCashBot."""
+    """
+    Ensures account has the required bio AND verifies both Bio and Channels in PacoCashBot.
+    1. Set profile about = @winpaco — free case every day!
+    2. Click u:pay:home in bot
+    3. Click u:pay:bio (verify bio)
+    4. Click u:pay:chats (verify partner channels)
+    """
     try:
+        # 1. Update Bio
         await client(UpdateProfileRequest(about=REQUIRED_BIO))
-        await asyncio.sleep(1.0)
+        await asyncio.sleep(1.5)
 
         bot = await safe_get_entity(client, "PacoCashBot")
-        # Click u:pay:home then u:pay:bio in bot
         await client.send_message(bot, "/start")
         await asyncio.sleep(2.0)
+
+        # 2. Open pay home menu
         msgs = await client.get_messages(bot, limit=3)
+        home_clicked = False
         for m in msgs:
             if m.reply_markup and hasattr(m.reply_markup, "rows"):
                 for r in m.reply_markup.rows:
                     for b in r.buttons:
                         if getattr(b, "data", None) == b"u:pay:home":
                             await m.click(data=b"u:pay:home")
-                            await asyncio.sleep(2.0)
+                            await asyncio.sleep(2.5)
+                            home_clicked = True
                             break
+                    if home_clicked:
+                        break
+            if home_clicked:
+                break
 
-        msgs = await client.get_messages(bot, limit=2)
-        for m in msgs:
+        # 3. Click u:pay:bio
+        msgs_after_home = await client.get_messages(bot, limit=3)
+        for m in ms_after_home if 'ms_after_home' in locals() else msgs_after_home:
             if m.reply_markup and hasattr(m.reply_markup, "rows"):
                 for r in m.reply_markup.rows:
                     for b in r.buttons:
                         if getattr(b, "data", None) == b"u:pay:bio":
+                            logger.info("Verifying bio with u:pay:bio...")
                             await m.click(data=b"u:pay:bio")
-                            await asyncio.sleep(2.0)
-                            return True
+                            await asyncio.sleep(2.5)
+                            break
+
+        # 4. Click u:pay:chats (verify channel subscriptions)
+        msgs_chats = await client.get_messages(bot, limit=3)
+        for m in msgs_chats:
+            if m.reply_markup and hasattr(m.reply_markup, "rows"):
+                for r in m.reply_markup.rows:
+                    for b in r.buttons:
+                        if getattr(b, "data", None) == b"u:pay:chats":
+                            logger.info("Verifying channel subscriptions with u:pay:chats...")
+                            await m.click(data=b"u:pay:chats")
+                            await asyncio.sleep(2.5)
+                            break
+
+        logger.info("Bio and channels verification sequence completed.")
         return True
     except Exception as e:
-        logger.warning(f"Error ensuring bio: {e}")
+        logger.warning(f"Error ensuring bio/verification: {e}")
         return False
-
-
-async def ensure_joined_channels(client: TelegramClient):
-    """Joins ChatPaco and partner channels."""
-    for ch in REQUIRED_CHANNELS:
-        try:
-            ent = await client.get_entity(ch)
-            await client(JoinChannelRequest(ent))
-            await asyncio.sleep(1.5)
-        except Exception as e:
-            logger.debug(f"Join channel {ch}: {e}")
 
 
 async def run_smart_chat_session(
@@ -270,19 +241,21 @@ async def run_smart_chat_session(
     progress_callback=None
 ) -> Dict[str, Any]:
     """
-    Executes intelligent, context-aware chatting in @ChatPaco:
-    - Reads recent messages before each reply.
-    - Understands duels, bonus, cashout, and user inquiries.
-    - Sets 'typing' presence for 2-4 seconds.
-    - Delays 22-42 seconds between messages (strictly respecting slowmode).
-    - Prevents canned repetitive spam.
+    Executes intelligent, safe, natural chatting in @ChatPaco:
+    - Joins channels first.
+    - Ensures bio and confirms both bio and channels in PacoCashBot.
+    - Sets 'typing' presence for 2.5-4.5 seconds.
+    - Delays 35-65 seconds between messages (safe and human-like).
+    - Sends directly to chat without replying to other users/bots.
+    - Uses only natural gambling/dice chatter.
     - Automatically checks verified count in PacoCashBot and stops at target_paid.
     """
     bot = await safe_get_entity(client, "PacoCashBot")
     chat = await safe_get_entity(client, TARGET_CHAT)
 
-    await ensure_bio_and_verification(client, bot)
+    # 1. Join channels first, then verify with bot
     await ensure_joined_channels(client)
+    await ensure_bio_and_verification(client, bot)
 
     recv, paid = await get_chat_stats(client, bot)
     logger.info(f"[{account_name}] Initial stats: received={recv}, paid={paid}/{target_paid}")
@@ -298,38 +271,35 @@ async def run_smart_chat_session(
 
     while paid < target_paid:
         try:
-            # 1. Fetch recent messages to understand context
-            recent_msgs = await client.get_messages(chat, limit=12)
+            # 1. Fetch recent messages for ambient context
+            recent_msgs = await client.get_messages(chat, limit=8)
 
-            # 2. Generate contextual reply
-            reply_text, reply_to_id = analyze_and_generate_reply(recent_msgs, local_history)
+            # 2. Pick natural contextual phrase
+            reply_text, _ = analyze_and_generate_reply(recent_msgs, local_history)
             local_history.append(reply_text)
 
             # 3. Simulate human typing
-            typing_duration = random.uniform(2.0, 4.2)
+            typing_duration = random.uniform(2.5, 4.5)
             async with client.action(chat, "typing"):
                 await asyncio.sleep(typing_duration)
 
-            # 4. Send message (with optional reply_to)
-            if reply_to_id and random.random() < 0.5:
-                await client.send_message(chat, reply_text, reply_to=reply_to_id)
-            else:
-                await client.send_message(chat, reply_text)
+            # 4. Send message cleanly directly to the chat (NEVER reply_to)
+            await client.send_message(chat, reply_text)
 
             messages_sent += 1
             consecutive_errors = 0
             logger.info(f"[{account_name}] Sent #{messages_sent}: '{reply_text}' (progress approx {paid + messages_sent}/{target_paid})")
 
-            # 5. Delay before next message (22-42s, safe and human-like)
-            delay = random.uniform(22.0, 42.0)
+            # 5. Delay before next message (35-65s, safe, natural, and relaxed)
+            delay = random.uniform(35.0, 65.0)
             await asyncio.sleep(delay)
 
-            # 6. Verify stats with bot every 7 messages or when approaching goal
-            if messages_sent % 7 == 0 or (paid + messages_sent) >= target_paid:
+            # 6. Verify stats with bot every 5 messages or when approaching goal
+            if messages_sent % 5 == 0 or (paid + messages_sent) >= target_paid:
                 r, p = await get_chat_stats(client, bot)
                 if p > paid:
                     paid = p
-                logger.info(f"[{account_name}] Verified stats: {paid}/{target_paid} paid messages")
+                logger.info(f"[{account_name}] Verified stats in bot: {paid}/{target_paid} paid messages")
                 if progress_callback:
                     progress_callback(account_name, paid, target_paid, f"Оплачено в боте: {paid}/{target_paid}")
 
@@ -337,13 +307,13 @@ async def run_smart_chat_session(
                     break
 
         except SlowModeWaitError as slow_err:
-            wait_s = slow_err.seconds or 10
-            logger.warning(f"[{account_name}] Slowmode hit: sleeping {wait_s + 3}s")
-            await asyncio.sleep(wait_s + 3)
-        except FloodWaitError as flood_err:
-            wait_s = flood_err.seconds or 30
-            logger.warning(f"[{account_name}] Flood wait: sleeping {wait_s + 5}s")
+            wait_s = slow_err.seconds or 15
+            logger.warning(f"[{account_name}] Slowmode hit: sleeping {wait_s + 5}s")
             await asyncio.sleep(wait_s + 5)
+        except FloodWaitError as flood_err:
+            wait_s = flood_err.seconds or 35
+            logger.warning(f"[{account_name}] Flood wait: sleeping {wait_s + 10}s")
+            await asyncio.sleep(wait_s + 10)
         except Exception as e:
             err_str = str(e).lower()
             consecutive_errors += 1
@@ -353,7 +323,7 @@ async def run_smart_chat_session(
                 return {"ok": False, "error": f"Chat restricted: {e}", "paid": paid}
             if consecutive_errors >= 5:
                 return {"ok": False, "error": f"Too many consecutive errors: {e}", "paid": paid}
-            await asyncio.sleep(10)
+            await asyncio.sleep(12)
 
     # Final verification
     recv, paid = await get_chat_stats(client, bot)
