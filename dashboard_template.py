@@ -68,8 +68,9 @@ def render_dashboard_html(stats: dict) -> str:
     recent_activations = sniper.get("recent_activations", [])
     recent_promos = sniper.get("recent_promos", [])
 
-    last_promo_id = recent_promos[-1].get("id", 334) if recent_promos else 334
-    last_promo_time = to_msk_display(recent_promos[-1].get("date"), fallback="04.11.2026 23:02:23 (МСК)") if recent_promos else "04.11.2026 23:02:23 (МСК)"
+    sorted_promos_asc = sorted(recent_promos, key=lambda x: x.get("id", 0)) if recent_promos else []
+    last_promo_id = sorted_promos_asc[-1].get("id", 343) if sorted_promos_asc else 343
+    last_promo_time = sorted_promos_asc[-1].get("date_msk") or to_msk_display(sorted_promos_asc[-1].get("date"), fallback="05.11.2026 20:14:36 (МСК)") if sorted_promos_asc else "05.11.2026 20:14:36 (МСК)"
 
     jv_accounts = jv.get("total_accounts", 109)
     jv_assets = float(jv.get("total_assets_jvt", 5538.23))
@@ -109,8 +110,10 @@ def render_dashboard_html(stats: dict) -> str:
             if c:
                 act_lookup[c] = a
 
+        # Sort recent_promos strictly descending by ID so newest post is ALWAYS at the top
+        sorted_promos_desc = sorted(recent_promos, key=lambda x: x.get("id", 0), reverse=True)
         seen_keys = set()
-        for p in reversed(recent_promos):
+        for p in sorted_promos_desc:
             time_str = p.get("date_msk") or to_msk_display(p.get("date"))
             for t in p.get("targets", []):
                 c = t.get("code") or t.get("voucher") or t.get("check") or t.get("start_param") or t.get("url")
