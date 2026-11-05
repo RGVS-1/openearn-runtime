@@ -44,17 +44,87 @@ async def safe_get_entity(client: TelegramClient, entity_name: str):
         return entity_name
 
 
+# Multilingual clean signals across English, German, Russian, Spanish
+CLEAN_SPAMBOT_SIGNALS = [
+    # English
+    "good news", "no limits", "free as a bird", "free to chat", "no restrictions",
+    # German (frequent when running on EU/Frankfurt servers)
+    "gute nachrichten", "keine einschränkungen", "frei wie ein vogel", "keine beschränkungen",
+    # Russian
+    "отличные новости", "нет ограничений", "не наложено никаких ограничений",
+    "свободен от каких-либо ограничений", "свободны как птица", "нет никаких ограничений",
+    "ограничений нет",
+    # Spanish
+    "buenas noticias", "no tiene limitaciones", "libre como un pájaro", "sin restricciones",
+]
+
+async def auto_appeal_spambot(client: TelegramClient, bot) -> bool:
+    """Attempts to automatically submit an appeal through SpamBot dialogue."""
+    try:
+        # Step 1: Look for "This is a mistake" button
+        msgs = await client.get_messages(bot, limit=3)
+        for m in msgs:
+            if m.reply_markup and hasattr(m.reply_markup, 'rows'):
+                for r in m.reply_markup.rows:
+                    for b in r.buttons:
+                        b_text = getattr(b, 'text', '')
+                        if any(w in b_text.lower() for w in ["mistake", "ошибка", "fehler"]):
+                            logger.info(f"SpamBot appeal step 1: clicking '{b_text}'")
+                            await client.send_message(bot, b_text)
+                            await asyncio.sleep(2.5)
+                            break
+
+        # Step 2: Confirmation "Yes, submit complaint" / "Yes" / "Да"
+        msgs = await client.get_messages(bot, limit=2)
+        for m in msgs:
+            if m.reply_markup and hasattr(m.reply_markup, 'rows'):
+                for r in m.reply_markup.rows:
+                    for b in r.buttons:
+                        b_text = getattr(b, 'text', '')
+                        if b_text.strip().lower() in ["yes", "да", "ja"]:
+                            logger.info(f"SpamBot appeal step 2: clicking '{b_text}'")
+                            await client.send_message(bot, b_text)
+                            await asyncio.sleep(2.5)
+                            break
+
+        # Step 3: "No! Never did that!" / "Нет, никогда"
+        msgs = await client.get_messages(bot, limit=2)
+        for m in msgs:
+            if m.reply_markup and hasattr(m.reply_markup, 'rows'):
+                for r in m.reply_markup.rows:
+                    for b in r.buttons:
+                        b_text = getattr(b, 'text', '')
+                        if any(w in b_text.lower() for w in ["never", "никогда", "nie", "нет!"]):
+                            logger.info(f"SpamBot appeal step 3: clicking '{b_text}'")
+                            await client.send_message(bot, b_text)
+                            await asyncio.sleep(2.5)
+                            break
+
+        # Step 4: Send natural appeal text
+        appeal_msg = "Здравствуйте! Мой аккаунт был ограничен ошибочно. Я не отправлял спам или рекламу незнакомым людям. Пожалуйста, снимите ограничения."
+        await client.send_message(bot, appeal_msg)
+        await asyncio.sleep(2.0)
+        logger.info("SpamBot appeal successfully submitted!")
+        return True
+    except Exception as e:
+        logger.warning(f"Error during SpamBot appeal: {e}")
+        return False
+
 async def is_account_spamblocked(client: TelegramClient) -> Tuple[bool, str]:
-    """Checks if account is restricted by Telegram's SpamBot."""
+    """Checks if account is restricted by Telegram's SpamBot (multilingual aware with auto-appeal)."""
     try:
         bot = await safe_get_entity(client, "SpamBot")
         await client.send_message(bot, "/start")
-        await asyncio.sleep(2.0)
-        msgs = await client.get_messages(bot, limit=1)
-        txt = (msgs[0].text or "") if msgs else ""
-        if "good news" in txt.lower() or "free" in txt.lower() or "no limits" in txt.lower():
+        await asyncio.sleep(2.5)
+        msgs = await client.get_messages(bot, limit=2)
+        txt = " ".join((m.text or "") for m in msgs).lower()
+        if any(sig in txt for sig in CLEAN_SPAMBOT_SIGNALS):
             return False, "CLEAN"
-        return True, "SPAMBLOCK"
+            
+        logger.warning(f"Account appears restricted by SpamBot. Text snippet: {txt[:100]}. Attempting auto-appeal...")
+        appealed = await auto_appeal_spambot(client, bot)
+        status = "SPAMBLOCK_APPEALED" if appealed else "SPAMBLOCK"
+        return True, status
     except Exception as e:
         logger.warning(f"Error checking SpamBot: {e}")
         return False, f"UNKNOWN: {e}"
