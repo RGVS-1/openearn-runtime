@@ -148,6 +148,10 @@ def get_working_proxy_for_account(acc_name: str, meta: Optional[dict] = None, fo
     - Pulls a fresh working proxy from RB_Autimatic proxy.txt
     - Saves it back to RB_Autimatic accounts_db.json and meta
     """
+    # On Render cloud (Frankfurt) or in cloud environment, direct MTProto connection is 100x faster and has 0 proxy blocks/errors
+    if os.environ.get("RENDER") or os.environ.get("PORT"):
+        return None
+
     proxy_info = meta.get("proxy") if isinstance(meta, dict) else None
     
     if not force_rotate and is_proxy_valid(proxy_info):

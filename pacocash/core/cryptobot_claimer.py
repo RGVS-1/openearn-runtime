@@ -50,7 +50,8 @@ async def claim_check_with_account(
     accounts_db = load_accounts_db()
     meta = accounts_db.get(receiver_account, {})
     working_proxy = get_working_proxy_for_account(receiver_account, meta)
-    prx = working_proxy.get("telethon") if isinstance(working_proxy, dict) else None
+    is_cloud = bool(os.environ.get("RENDER") or os.environ.get("PORT"))
+    prx = None if is_cloud else (working_proxy.get("telethon") if isinstance(working_proxy, dict) else None)
     dev = meta.get("device", {
         "device_model": "Desktop", "system_version": "Windows 11 x64",
         "app_version": "4.16.8 x64", "system_lang_code": "ru-RU", "lang_code": "ru"
@@ -64,8 +65,10 @@ async def claim_check_with_account(
         device_model=dev.get("device_model", "Desktop"),
         system_version=dev.get("system_version", "Windows 11 x64"),
         app_version=dev.get("app_version", "4.16.8 x64"),
-        connection_retries=2,
-        retry_delay=1
+        connection_retries=3,
+        retry_delay=1,
+        flood_sleep_threshold=24,
+        catch_up=False
     )
 
     try:

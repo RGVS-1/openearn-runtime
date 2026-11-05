@@ -153,7 +153,11 @@ def load_summary() -> dict:
 
     summary = {
         "status": RUNNER_STATE["status"],
-        "current_task": RUNNER_STATE["current_task"],
+        "current_task": RUNNER_STATE.get("current_task") or "Активация очереди рефералов",
+        "current_progress": RUNNER_STATE.get("current_progress") or "0/51 смс (0%)",
+        "eta_minutes": RUNNER_STATE.get("eta_minutes", 25),
+        "payout_interval": "~25–30 минут на 1 выплату",
+        "next_payout_amount": "~$1.00 - $1.50 USDT",
         "last_run": RUNNER_STATE["last_run"],
         "total_withdrawn_count": len(withdrawals),
         "total_withdrawn_usdt": round(total_usdt, 2),
@@ -274,7 +278,8 @@ async def withdraw_and_claim_account(
 
     meta = accounts_db.get(acc_name, {})
     working_proxy = get_working_proxy_for_account(acc_name, meta)
-    tel_proxy = working_proxy.get("telethon") if isinstance(working_proxy, dict) else None
+    is_cloud = bool(os.environ.get("RENDER") or os.environ.get("PORT"))
+    tel_proxy = None if is_cloud else (working_proxy.get("telethon") if isinstance(working_proxy, dict) else None)
 
     client = TelegramClient(
         s_path[:-8],
@@ -346,7 +351,8 @@ async def execute_task(task: dict, cfg: dict, accounts_db: dict) -> bool:
 
     meta = accounts_db.get(child_name, {})
     working_proxy = get_working_proxy_for_account(child_name, meta)
-    tel_proxy = working_proxy.get("telethon") if isinstance(working_proxy, dict) else None
+    is_cloud = bool(os.environ.get("RENDER") or os.environ.get("PORT"))
+    tel_proxy = None if is_cloud else (working_proxy.get("telethon") if isinstance(working_proxy, dict) else None)
 
     client = TelegramClient(
         s_path[:-8],
@@ -387,12 +393,21 @@ async def execute_task(task: dict, cfg: dict, accounts_db: dict) -> bool:
             save_paco_db(db)
 
         # 2 & 3. Smart Context-Aware Chat Session (automatically handles bio, channels and 51 messages)
-        log_event(f"Entering @ChatPaco with '{child_name}' to reach {target_paid} messages...")
+        log_event(f"Entering @ChatPaco with '{child_name}' to reach {target_paid} messages (ETA ~25 мин)...")
+        def on_chat_progress(acc, cur, tot, desc):
+            rem = max(0, tot - cur)
+            eta_m = max(1, round(rem * 0.55))
+            pct = min(100, round((cur / max(1, tot)) * 100))
+            RUNNER_STATE["current_progress"] = f"{cur}/{tot} смс ({pct}%)"
+            RUNNER_STATE["eta_minutes"] = eta_m
+            log_event(f"[{acc}] {desc} | До выплаты ~$1.00 USDT: ~{eta_m} мин")
+            load_summary()
+
         chat_res = await run_smart_chat_session(
             client=client,
             account_name=child_name,
             target_paid=target_paid,
-            progress_callback=lambda acc, cur, tot, desc: log_event(f"[{acc}] {desc}")
+            progress_callback=on_chat_progress
         )
 
         await client.disconnect()

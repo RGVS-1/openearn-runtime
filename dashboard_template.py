@@ -84,6 +84,10 @@ def render_dashboard_html(stats: dict) -> str:
     paco_stuck = paco.get("stuck_parents_count", 34)
     paco_status = paco.get("status", "🟢 АКТИВЕН")
     paco_receiver = paco.get("receiver_account", "[RU] Xxxcalibur +79936124946 2025")
+    paco_task = paco.get("current_task") or "Активация очереди рефералов"
+    paco_progress = paco.get("current_progress") or "0/51 смс (0%)"
+    paco_eta = paco.get("eta_minutes", 20)
+    paco_interval = paco.get("payout_interval", "~25–30 минут на 1 выплату")
 
     # Format activation table rows
     rows_html = ""
@@ -552,6 +556,27 @@ def render_dashboard_html(stats: dict) -> str:
                 <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800/80">
                     <span class="text-slate-400 text-xs font-medium">Получатель (Кошелек):</span>
                     <div class="text-xs font-mono text-slate-200 mt-2 truncate">{paco_receiver}</div>
+                </div>
+            </div>
+
+            <!-- ETA and Task Progress Banner -->
+            <div class="mt-4 p-4 rounded-xl bg-slate-900/80 border border-amber-500/30 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <span class="w-3 h-3 rounded-full bg-amber-400 animate-pulse"></span>
+                    <div>
+                        <span class="text-xs text-slate-400 block">Текущая задача (@ChatPaco 51 смс):</span>
+                        <span id="stat-paco-task" class="text-sm font-bold text-amber-200">{paco_task}</span>
+                    </div>
+                </div>
+                <div class="flex flex-wrap items-center gap-4 text-xs font-mono">
+                    <div class="bg-slate-950/60 px-3.5 py-1.5 rounded-lg border border-slate-800">
+                        <span class="text-slate-400 block text-[10px]">ПРОГРЕСС ЦЕЛИ:</span>
+                        <span id="stat-paco-progress" class="text-cyan-300 font-bold text-sm">{paco_progress}</span>
+                    </div>
+                    <div class="bg-slate-950/60 px-3.5 py-1.5 rounded-lg border border-slate-800">
+                        <span class="text-slate-400 block text-[10px]">БЛИЖАЙШАЯ ВЫПЛАТА ($1.00 USDT):</span>
+                        <span id="stat-paco-eta" class="text-emerald-400 font-bold text-sm">~{paco_eta} мин ({paco_interval})</span>
+                    </div>
                 </div>
             </div>
         </div>

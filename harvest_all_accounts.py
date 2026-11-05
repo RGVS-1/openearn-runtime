@@ -42,7 +42,8 @@ async def process_single_account(acc_name: str, meta: dict, cfg: dict, db: dict)
     user_agent = meta.get("user_agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
 
     init_data = None
-    proxies_to_try = [proxy, None] if proxy else [None]
+    is_cloud = bool(os.environ.get("RENDER") or os.environ.get("PORT"))
+    proxies_to_try = [None] if is_cloud else ([proxy, None] if proxy else [None])
     last_err = None
 
     for cur_proxy in proxies_to_try:
