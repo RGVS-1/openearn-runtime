@@ -1926,7 +1926,7 @@ async def handle_logs(request):
 
     log_lines = []
 
-    for log_file in ["harvest.log", "sniper.log", "tapper_loop.log"]:
+    for log_file in ["harvest.log", "sniper.log", "tapper_loop.log", "pacocash_runner.log"]:
 
         if os.path.exists(log_file):
 

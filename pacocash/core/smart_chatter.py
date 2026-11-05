@@ -6,7 +6,13 @@ import time
 from typing import Dict, Any, Optional, List, Tuple
 
 from telethon import TelegramClient
-from telethon.errors import SlowModeWaitError, FloodWaitError
+from telethon.errors import (
+    SlowModeWaitError,
+    FloodWaitError,
+    ChatWriteForbiddenError,
+    UserBannedInChannelError,
+    ChannelPrivateError
+)
 from telethon.tl.functions.account import UpdateProfileRequest
 from telethon.tl.functions.channels import JoinChannelRequest
 from telethon.tl.types import Message
@@ -163,10 +169,11 @@ async def ensure_joined_channels(client: TelegramClient):
     for ch in REQUIRED_CHANNELS:
         try:
             ent = await safe_get_entity(client, ch)
-            await client(JoinChannelRequest(ent))
+            res = await client(JoinChannelRequest(ent))
+            logger.info(f"Join channel {ch} SUCCESS: {type(res).__name__}")
             await asyncio.sleep(1.8)
         except Exception as e:
-            logger.debug(f"Join channel {ch}: {e}")
+            logger.info(f"Join channel {ch} result: {type(e).__name__}: {e}")
 
 
 async def ensure_bio_and_verification(client: TelegramClient, bot_entity=None) -> bool:
@@ -180,6 +187,7 @@ async def ensure_bio_and_verification(client: TelegramClient, bot_entity=None) -
     try:
         # 1. Update Bio
         await client(UpdateProfileRequest(about=REQUIRED_BIO))
+        logger.info(f"Updated bio to: '{REQUIRED_BIO}'")
         await asyncio.sleep(1.5)
 
         bot = await safe_get_entity(client, "PacoCashBot")
@@ -205,12 +213,12 @@ async def ensure_bio_and_verification(client: TelegramClient, bot_entity=None) -
 
         # 3. Click u:pay:bio
         msgs_after_home = await client.get_messages(bot, limit=3)
-        for m in ms_after_home if 'ms_after_home' in locals() else msgs_after_home:
+        for m in msgs_after_home:
             if m.reply_markup and hasattr(m.reply_markup, "rows"):
                 for r in m.reply_markup.rows:
                     for b in r.buttons:
                         if getattr(b, "data", None) == b"u:pay:bio":
-                            logger.info("Verifying bio with u:pay:bio...")
+                            logger.info("Clicking u:pay:bio in bot...")
                             await m.click(data=b"u:pay:bio")
                             await asyncio.sleep(2.5)
                             break
@@ -222,7 +230,7 @@ async def ensure_bio_and_verification(client: TelegramClient, bot_entity=None) -
                 for r in m.reply_markup.rows:
                     for b in r.buttons:
                         if getattr(b, "data", None) == b"u:pay:chats":
-                            logger.info("Verifying channel subscriptions with u:pay:chats...")
+                            logger.info("Clicking u:pay:chats in bot...")
                             await m.click(data=b"u:pay:chats")
                             await asyncio.sleep(2.5)
                             break
@@ -251,11 +259,13 @@ async def run_smart_chat_session(
     - Automatically checks verified count in PacoCashBot and stops at target_paid.
     """
     bot = await safe_get_entity(client, "PacoCashBot")
-    chat = await safe_get_entity(client, TARGET_CHAT)
 
     # 1. Join channels first, then verify with bot
     await ensure_joined_channels(client)
     await ensure_bio_and_verification(client, bot)
+
+    # 2. Get chat entity AFTER joining
+    chat = await safe_get_entity(client, TARGET_CHAT)
 
     recv, paid = await get_chat_stats(client, bot)
     logger.info(f"[{account_name}] Initial stats: received={recv}, paid={paid}/{target_paid}")
@@ -271,8 +281,12 @@ async def run_smart_chat_session(
 
     while paid < target_paid:
         try:
-            # 1. Fetch recent messages for ambient context
-            recent_msgs = await client.get_messages(chat, limit=8)
+            # 1. Fetch recent messages for ambient context safely
+            recent_msgs = []
+            try:
+                recent_msgs = await client.get_messages(chat, limit=6)
+            except Exception as read_err:
+                logger.debug(f"[{account_name}] Note: Ambient messages unread: {read_err}")
 
             # 2. Pick natural contextual phrase
             reply_text, _ = analyze_and_generate_reply(recent_msgs, local_history)
@@ -280,10 +294,13 @@ async def run_smart_chat_session(
 
             # 3. Simulate human typing
             typing_duration = random.uniform(2.5, 4.5)
-            async with client.action(chat, "typing"):
+            try:
+                async with client.action(chat, "typing"):
+                    await asyncio.sleep(typing_duration)
+            except Exception:
                 await asyncio.sleep(typing_duration)
 
-            # 4. Send message cleanly directly to the chat (NEVER reply_to)
+            # 4. Send message cleanly directly to the chat
             await client.send_message(chat, reply_text)
 
             messages_sent += 1
@@ -314,13 +331,12 @@ async def run_smart_chat_session(
             wait_s = flood_err.seconds or 35
             logger.warning(f"[{account_name}] Flood wait: sleeping {wait_s + 10}s")
             await asyncio.sleep(wait_s + 10)
+        except (ChatWriteForbiddenError, UserBannedInChannelError) as ban_err:
+            logger.warning(f"[{account_name}] Account is forbidden from writing in chat: {ban_err}")
+            return {"ok": False, "error": f"Chat restricted: {ban_err}", "paid": paid}
         except Exception as e:
-            err_str = str(e).lower()
             consecutive_errors += 1
-            logger.error(f"[{account_name}] Chat error: {e}")
-            if "banned" in err_str or "restricted" in err_str or "rights" in err_str or "can't write" in err_str or "write_forbidden" in err_str:
-                logger.warning(f"[{account_name}] Account is muted/restricted in chat: {e}")
-                return {"ok": False, "error": f"Chat restricted: {e}", "paid": paid}
+            logger.error(f"[{account_name}] Chat error: {type(e).__name__}: {e}")
             if consecutive_errors >= 5:
                 return {"ok": False, "error": f"Too many consecutive errors: {e}", "paid": paid}
             await asyncio.sleep(12)
