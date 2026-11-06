@@ -58,6 +58,9 @@ WITHDRAWALS_PATH = os.path.join(PACO_DIR, "withdrawals.json")
 CONFIG_PATH = os.path.join(PACO_DIR, "config.json")
 SUMMARY_PATH = os.path.join(BASE_DIR, "pacocash_summary.json")
 AUDIT_PATH = os.path.join(PACO_DIR, "audit_108_paco_status.json")
+CLEAN_POOL_PATH = os.path.join(PACO_DIR, "pacocash_clean_pool.json")
+if not os.path.exists(CLEAN_POOL_PATH):
+    CLEAN_POOL_PATH = os.path.join(BASE_DIR, "pacocash_clean_pool.json")
 
 RUNNER_STATE = {
     "status": "IDLE",
@@ -177,9 +180,10 @@ def load_summary() -> dict:
 
 def build_execution_plan() -> List[dict]:
     """
+    Builds the execution plan for PacoCash automation with dynamic clean pool pairing.
     Pairs each unpaid parent ($0.50 available) with:
-    1. An existing leaf child assigned to them (if any).
-    2. OR a clean account that has never touched PacoCash.
+    1. A verified clean child whose parent_ref points to this parent.
+    2. OR an unassigned clean account from the clean pool.
     """
     db = load_paco_db()
     withdrawals = load_withdrawals()
@@ -188,72 +192,66 @@ def build_execution_plan() -> List[dict]:
     # Available session files
     valid_sessions = {
         f[:-8] for f in os.listdir(SESSIONS_DIR)
-        if f.endswith(".session") and not f.startswith("temp_")
+        if f.endswith(".session") and not f.startswith("temp_") and "listener" not in f.lower()
     }
 
-    # 1. Parents needing activation
+    # Load clean pool if available
+    clean_pool = set()
+    pool_candidates = [
+        CLEAN_POOL_PATH,
+        os.path.join(PACO_DIR, "pacocash_clean_pool.json"),
+        os.path.join(BASE_DIR, "pacocash_clean_pool.json")
+    ]
+    for c_path in pool_candidates:
+        if os.path.exists(c_path):
+            try:
+                with open(c_path, "r", encoding="utf-8") as f:
+                    c_data = json.load(f)
+                clean_pool = set(c_data.get("clean_pool", []))
+                if clean_pool:
+                    break
+            except Exception:
+                pass
+
+    FORBIDDEN_STATUSES = {"RESTRICTED", "SPAMBLOCK", "DEAD", "UNAUTHORIZED", "DELETED"}
+
+    # 1. Map parent_ref -> valid clean children in DB
+    ref_to_children: Dict[str, List[str]] = {}
+    for c_name, c_data in db.items():
+        if c_name in withdrawn_set or c_name not in valid_sessions:
+            continue
+        if c_data.get("status") in FORBIDDEN_STATUSES:
+            continue
+        if clean_pool and c_name not in clean_pool:
+            continue
+        pref = c_data.get("parent_ref")
+        if pref:
+            ref_to_children.setdefault(pref, []).append(c_name)
+
+    # 2. Parents needing activation ($0.50+ available and unwithdrawn)
     parents = []
     for acc_name, data in db.items():
         if acc_name in withdrawn_set or acc_name not in valid_sessions:
             continue
+        if data.get("status") in FORBIDDEN_STATUSES:
+            continue
         avail = data.get("available", 0.0)
         own_ref = data.get("own_ref_code")
         if avail >= 0.5 and own_ref:
-            parents.append((acc_name, own_ref, avail, data.get("children", [])))
+            parents.append((acc_name, own_ref, avail))
 
-    # 2. Existing leaf children (balance 0.0, assigned to parents)
-    leaf_children = []
-    for acc_name, data in db.items():
-        if acc_name in withdrawn_set or acc_name not in valid_sessions:
-            continue
-        if data.get("available", 0.0) == 0.0 and data.get("parent_ref"):
-            leaf_children.append((acc_name, data.get("parent_ref")))
-
-    # 3. Clean accounts from audit
-    clean_candidates = []
-    if os.path.exists(AUDIT_PATH):
-        try:
-            with open(AUDIT_PATH, "r", encoding="utf-8") as f:
-                audit_data = json.load(f)
-            for acc in audit_data.get("never_participated", []):
-                if acc not in withdrawn_set and acc in valid_sessions and acc not in db:
-                    clean_candidates.append(acc)
-        except Exception:
-            pass
-
-    # Build tasks: Prioritize fresh clean accounts first for maximum reliability and immediate payouts!
     tasks = []
     used_children = set()
     used_parents = set()
 
-    # Step A: Match parents with fresh clean accounts FIRST
-    clean_idx = 0
-    for p_name, p_ref, p_avail, _ in parents:
-        if clean_idx < len(clean_candidates):
-            child_name = clean_candidates[clean_idx]
-            clean_idx += 1
-            tasks.append({
-                "parent": p_name,
-                "parent_ref_code": p_ref,
-                "child": child_name,
-                "is_clean": True,
-                "target_paid": 51
-            })
-            used_children.add(child_name)
-            used_parents.add(p_name)
-
-    # Step B: Match remaining parents with existing leaf children
-    for p_name, p_ref, p_avail, p_children in parents:
-        if p_name in used_parents:
-            continue
+    # Step A: Match with directly assigned clean children first
+    for p_name, p_ref, p_avail in parents:
         matched_child = None
-        for c in p_children:
-            if c in valid_sessions and c not in withdrawn_set and c not in used_children:
-                child_status = db.get(c, {}).get("status")
-                if child_status in ["RESTRICTED", "SPAMBLOCK", "DEAD", "COMPLETED", "DELETED", "UNAUTHORIZED"]:
-                    continue
+        for c in ref_to_children.get(p_ref, []):
+            if c not in used_children and c != p_name:
                 matched_child = c
                 break
+
         if matched_child:
             tasks.append({
                 "parent": p_name,
@@ -264,6 +262,31 @@ def build_execution_plan() -> List[dict]:
             })
             used_children.add(matched_child)
             used_parents.add(p_name)
+
+    # Step B: For parents without direct clean children, pair with remaining unassigned clean pool accounts
+    remaining_clean = [
+        c for c in (clean_pool if clean_pool else valid_sessions)
+        if c in valid_sessions and c not in withdrawn_set and c not in used_children
+        and db.get(c, {}).get("status") not in FORBIDDEN_STATUSES
+    ]
+    clean_idx = 0
+    for p_name, p_ref, p_avail in parents:
+        if p_name in used_parents:
+            continue
+        while clean_idx < len(remaining_clean):
+            cand = remaining_clean[clean_idx]
+            clean_idx += 1
+            if cand != p_name and cand not in used_children:
+                tasks.append({
+                    "parent": p_name,
+                    "parent_ref_code": p_ref,
+                    "child": cand,
+                    "is_clean": True,
+                    "target_paid": 51
+                })
+                used_children.add(cand)
+                used_parents.add(p_name)
+                break
 
     log_event(f"Built execution plan: {len(tasks)} tasks queued for activation and payout.")
     return tasks
@@ -466,6 +489,10 @@ async def run_pacocash_cycle(max_tasks: Optional[int] = None):
     Loads execution plan and processes tasks sequentially.
     """
     global RUNNER_STATE
+    if RUNNER_STATE.get("status") == "RUNNING":
+        logger.warning("PacoCash cycle already in progress. Skipping duplicate start.")
+        return
+
     RUNNER_STATE["status"] = "RUNNING"
     RUNNER_STATE["last_run"] = datetime.now(timezone.utc).isoformat()
     load_summary()
@@ -482,9 +509,12 @@ async def run_pacocash_cycle(max_tasks: Optional[int] = None):
     success_count = 0
     for idx, task in enumerate(tasks, 1):
         log_event(f"--- Task {idx}/{len(tasks)} ---")
-        ok = await execute_task(task, cfg, accounts_db)
-        if ok:
-            success_count += 1
+        try:
+            ok = await execute_task(task, cfg, accounts_db)
+            if ok:
+                success_count += 1
+        except Exception as t_err:
+            log_event(f"Task {idx} error: {t_err}")
         # Moderate pause between tasks
         await asyncio.sleep(15.0)
 
@@ -500,20 +530,19 @@ async def start_pacocash_daemon():
     """
     logger.info("Starting PacoCash daemon for Render...")
     # Wait for server startup
-    await asyncio.sleep(30)
+    await asyncio.sleep(25)
     while True:
         try:
             tasks = build_execution_plan()
             if tasks:
-                log_event(f"PacoCash daemon found {len(tasks)} queued tasks. Launching batch...")
-                # Test single task first as requested
-                await run_pacocash_cycle(max_tasks=1)
+                log_event(f"PacoCash daemon found {len(tasks)} queued tasks. Launching continuous cycle...")
+                await run_pacocash_cycle()
             else:
                 log_event("PacoCash daemon: All accounts processed and withdrawn. Idle.")
         except Exception as e:
             logger.error(f"PacoCash daemon error: {e}")
 
-        # Wait 30 minutes before next check
+        # Wait 60 seconds before next check
         await asyncio.sleep(60)
 
 if __name__ == "__main__":

@@ -1844,7 +1844,7 @@ async def handle_manual_pacocash_cycle(request):
 
     import aiohttp.web as web
 
-    asyncio.create_task(pacocash_runner.run_pacocash_cycle(max_tasks=1))
+    asyncio.create_task(pacocash_runner.run_pacocash_cycle())
 
     return web.json_response({"ok": True, "message": "PacoCash autonomous cycle started in background!"})
 
